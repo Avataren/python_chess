@@ -2,6 +2,7 @@ import numpy as np
 import pygame
 from typing import Optional
 from fen import FEN
+from move_executor import MoveExecutor
 from move_validator import MoveValidator
 from piece_drawer import PieceDrawer
 from piece import Piece
@@ -95,7 +96,8 @@ class Chess:
         if self.selected_piece and move_validator.is_move_legal(self.selected_piece, self.selected_piece_position, new_position):
             # Execute the move if legal
             # Update the board state accordingly
-            self.board[new_position[1]][new_position[0]] = self.selected_piece
+            moveExecutor = MoveExecutor(self.board)
+            moveExecutor.execute_move(self.selected_piece, new_position)
             self.current_fen_state = self.fen.board_to_fen(self.board)
             self.deselect_piece()
         else:
