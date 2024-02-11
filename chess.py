@@ -21,6 +21,7 @@ class Chess:
     fen = FEN()
     current_fen_state = ""
     selected_grid_position = None
+    board_surface = None
     
     board = np.empty((8, 8), dtype=Piece)
     def __init__(self, board_size):
@@ -28,12 +29,20 @@ class Chess:
         self.board_size = board_size
         self.square_size = board_size / 8
         self.pieceDrawer = PieceDrawer("assets/pieces.png")
-        
+        self._init_board_surface()
         self.reset_board()
 
     def reset_board(self):
         self.current_fen_state = self.fen.initial_board_configuration
         self.board = self.fen.fen_to_board(self.current_fen_state)
+
+    def _init_board_surface(self):
+        """ Draws the static board squares onto the board surface. """
+        self.board_surface = pygame.Surface((self.board_size, self.board_size))  # Step 1: Initialize board surface
+        for (i, j) in [(i, j) for i in range(8) for j in range(8)]:
+            square_color = self.LIGHT_SQUARE_COLOR if (i + j) % 2 == 0 else self.DARK_SQUARE_COLOR
+            pygame.draw.rect(self.board_surface, square_color, (i * self.square_size, j * self.square_size, self.square_size, self.square_size))
+
 
     def debug_print_board(self):
         """
@@ -121,16 +130,13 @@ class Chess:
             self.draw_dragged_piece(screen)
     
     def draw_board(self, screen):
-        for (i, j) in [(i, j) for i in range(8) for j in range(8)]:
-            if (i + j) % 2 == 0:
-                pygame.draw.rect(screen, self.LIGHT_SQUARE_COLOR , (i * self.square_size, j * self.square_size, self.square_size, self.square_size))
-            else:
-                pygame.draw.rect(screen, self.DARK_SQUARE_COLOR, (i * self.square_size, j * self.square_size, self.square_size, self.square_size))
-               
-            if (self.selected_grid_position is not None and (i, j) == self.selected_grid_position):
-                pygame.draw.rect(screen, self.SELECTED_SQAURE_COLOR, (i * self.square_size, j * self.square_size, self.square_size, self.square_size), 4)
+        screen.blit(self.board_surface, (0, 0))
+        if self.selected_grid_position is not None:
+            x,y= self.selected_grid_position
+            pygame.draw.rect(screen, self.SELECTED_SQAURE_COLOR, (x * self.square_size, y * self.square_size, self.square_size, self.square_size), 4)
 
         self.draw_pieces_from_fen(screen, self.fen.board_to_fen(self.board))
+        #self.pieceDrawer.draw_piece(screen, Piece.BlackKnight, (0, 0), (self.square_size, self.square_size))
                
     def draw_pieces_from_fen(self, screen, fen):
             placement = fen.split()[0]
