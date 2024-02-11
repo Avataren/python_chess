@@ -22,6 +22,8 @@ def main():
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_r:
                     chess.reset_board()
+                if event.key == pygame.K_ESCAPE:
+                    running = False                    
 
         screen.fill((55, 58, 63))
         chess.draw(screen)
