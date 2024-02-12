@@ -3,7 +3,7 @@ from chess import Chess
 
 def main():
     pygame.init()
-    screen = pygame.display.set_mode((1024, 1024))
+    screen = pygame.display.set_mode((1024, 1024), pygame.SRCALPHA)
     clock = pygame.time.Clock()
     running = True
 

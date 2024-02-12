@@ -32,3 +32,30 @@ class Piece:
         WhitePawn, WhiteKnight, WhiteBishop, WhiteRook, WhiteQueen, WhiteKing,
         BlackPawn, BlackKnight, BlackBishop, BlackRook, BlackQueen, BlackKing
     }
+    
+    @staticmethod
+    def is_pawn(piece):
+        return (piece&7) == Piece.Pawn
+    @staticmethod
+    def is_knight(piece):
+        return (piece&7) == Piece.Knight
+    @staticmethod
+    def is_bishop(piece):
+        return (piece&7) == Piece.Bishop
+    @staticmethod
+    def is_rook(piece):
+        return (piece&7) == Piece.Rook
+    @staticmethod
+    def is_queen(piece):
+        return (piece&7) == Piece.Queen
+    @staticmethod
+    def is_king(piece):
+        return (piece&7) == Piece.King
+
+    
+    @staticmethod
+    def get_piece_color(piece):
+        if piece >= Piece.Black:
+            return Piece.Black
+        else:
+            return Piece.White    

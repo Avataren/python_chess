@@ -2,18 +2,21 @@ import numpy as np
 import pygame
 from typing import Optional
 from fen import FEN
+from chess_move import ChessMove
 from move_executor import MoveExecutor
+from move_generator import MoveGenerator
 from move_validator import MoveValidator
 from piece_drawer import PieceDrawer
 from piece import Piece
 
 class Chess:
-        
+    debug = False
     board_size = 720
     square_size = board_size / 8
     LIGHT_SQUARE_COLOR = "#F0D9B5"
     DARK_SQUARE_COLOR = "#B58863"
     SELECTED_SQAURE_COLOR = "#EE5544"
+    VALID_MOVE_COLOR = "#6080a0e0"
     selected_piece:Optional[Piece] = None
     selected_piece_position = None
     dragging = False    
@@ -22,6 +25,7 @@ class Chess:
     current_fen_state = ""
     selected_grid_position = None
     board_surface = None
+    current_valid_moves = None
     
     board = np.empty((8, 8), dtype=Piece)
     def __init__(self, board_size):
@@ -86,8 +90,12 @@ class Chess:
         x = int(mouseX // self.square_size)
         y = int(mouseY // self.square_size)
         if (x < 0 or x > 7 or y < 0 or y > 7):
+            self.current_valid_moves = None
             return None
         piece = self.board[y][x]
+        moveGenerator = MoveGenerator(self.board)
+        self.current_valid_moves = moveGenerator.get_moves_for_piece(piece, (x,y))
+        print (f"valid moves:{self.current_valid_moves}")
         self.board[y][x] = Piece.No_Piece
         return piece
     
@@ -115,10 +123,16 @@ class Chess:
             self.dragging = False
             self.drag_position = None
             self.board = self.fen.fen_to_board(self.current_fen_state)
+        self.current_valid_moves = None
             
     def update_dragging_piece_position(self, mousePosition):
         self.drag_position = (mousePosition[0] - self.square_size / 2, mousePosition[1] - self.square_size / 2)
     
+        square_pos = self.get_square_location_from_position(mousePosition)
+        moveGenerator = MoveGenerator(self.board)
+        if (self.debug):
+            self.current_valid_moves = moveGenerator.get_moves_for_piece(self.selected_piece, square_pos)
+        
     def draw_dragged_piece(self, screen):
         if self.drag_position is not None and self.selected_piece is not None:
             self.pieceDrawer.draw_piece(screen, self.selected_piece, self.drag_position, (self.square_size, self.square_size))
@@ -134,10 +148,26 @@ class Chess:
         if self.selected_grid_position is not None:
             x,y= self.selected_grid_position
             pygame.draw.rect(screen, self.SELECTED_SQAURE_COLOR, (x * self.square_size, y * self.square_size, self.square_size, self.square_size), 4)
+            self.draw_valid_moves(screen)
 
         self.draw_pieces_from_fen(screen, self.fen.board_to_fen(self.board))
         #self.pieceDrawer.draw_piece(screen, Piece.BlackKnight, (0, 0), (self.square_size, self.square_size))
-               
+
+    def draw_valid_moves(self, screen):
+        if self.current_valid_moves:
+            radius = self.square_size // 4
+            for (x, y) in self.current_valid_moves:  # Ensure that position unpacks into x, y coordinates
+                surface_size = (radius * 2, radius * 2)
+                transparent_surface = pygame.Surface(surface_size, pygame.SRCALPHA)
+                # The circle's center is at (radius, radius) on the new surface
+                pygame.draw.circle(transparent_surface, self.VALID_MOVE_COLOR, (radius, radius), radius)
+                # Calculate the top-left corner position for blitting the surface onto the main screen
+                # Adjust x, y from grid coordinates to pixel coordinates and center the circle in the square
+                blit_position = (x * self.square_size + self.square_size // 4, y * self.square_size + self.square_size // 4)
+                screen.blit(transparent_surface, blit_position)
+
+
+                
     def draw_pieces_from_fen(self, screen, fen):
             placement = fen.split()[0]
             rows = placement.split('/')
