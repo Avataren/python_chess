@@ -94,7 +94,7 @@ class Chess:
             return None
         piece = self.board[y][x]
         moveGenerator = MoveGenerator(self.board)
-        self.current_valid_moves = moveGenerator.get_moves_for_piece(piece, (x,y))
+        self.current_valid_moves = moveGenerator.get_moves_for_piece(piece, (y,x)) # ensure row,col format
         print (f"valid moves:{self.current_valid_moves}")
         self.board[y][x] = Piece.No_Piece
         return piece
@@ -153,21 +153,33 @@ class Chess:
         self.draw_pieces_from_fen(screen, self.fen.board_to_fen(self.board))
         #self.pieceDrawer.draw_piece(screen, Piece.BlackKnight, (0, 0), (self.square_size, self.square_size))
 
+    def board_pos_to_screen_pos(self, row, col):
+        """
+        Convert a board position (row, col) to screen coordinates (screen_x, screen_y).
+        
+        Args:
+            row (int): The row index on the board (0-7).
+            col (int): The column index on the board (0-7).
+            square_size (float): The size of a square on the board in pixels.
+        
+        Returns:
+            tuple: A tuple containing the screen coordinates (screen_x, screen_y).
+        """
+        screen_x = col * self.square_size + self.square_size / 2  # Center in square
+        screen_y = row * self.square_size + self.square_size / 2  # Center in square
+        return screen_x, screen_y
+
     def draw_valid_moves(self, screen):
         if self.current_valid_moves:
             radius = self.square_size // 4
-            for (x, y) in self.current_valid_moves:  # Ensure that position unpacks into x, y coordinates
-                surface_size = (radius * 2, radius * 2)
-                transparent_surface = pygame.Surface(surface_size, pygame.SRCALPHA)
-                # The circle's center is at (radius, radius) on the new surface
-                pygame.draw.circle(transparent_surface, self.VALID_MOVE_COLOR, (radius, radius), radius)
-                # Calculate the top-left corner position for blitting the surface onto the main screen
-                # Adjust x, y from grid coordinates to pixel coordinates and center the circle in the square
-                blit_position = (x * self.square_size + self.square_size // 4, y * self.square_size + self.square_size // 4)
-                screen.blit(transparent_surface, blit_position)
+            for move in self.current_valid_moves:
+                # Unpack the move; assuming move is in (row, column) format
+                row, col = move
+                # Use the conversion function to get screen coordinates
+                screen_x, screen_y = self.board_pos_to_screen_pos(row, col)
+                # Draw a circle at the calculated screen position
+                pygame.draw.circle(screen, self.VALID_MOVE_COLOR, (int(screen_x), int(screen_y)), radius)
 
-
-                
     def draw_pieces_from_fen(self, screen, fen):
             placement = fen.split()[0]
             rows = placement.split('/')
