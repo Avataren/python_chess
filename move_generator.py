@@ -11,6 +11,9 @@ class MoveGenerator:
     # def __init__(self):
 
     def get_moves_for_piece(self, piece, start_position, board_state):
+        if piece is None or piece == Piece.No_Piece or start_position is None or board_state is None:
+            return None
+        
         if Piece.is_bishop(piece):
             return self.generate_moves(piece, start_position, self.bishop_directions, 8, board_state)
         elif Piece.is_knight(piece):
