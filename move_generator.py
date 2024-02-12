@@ -61,10 +61,11 @@ class MoveGenerator:
             forward_two = start_row - 2 if start_row == 6 else None
 
         # Forward moves
-        if forward_one is not None and board_state.board[forward_one][start_col] == Piece.No_Piece:
-            moves.append((forward_one, start_col))
-            if forward_two is not None and board_state.board[forward_two][start_col] == Piece.No_Piece:
-                moves.append((forward_two, start_col))
+        if forward_one is not None and forward_one >= 0 and forward_one < 8:
+            if board_state.board[forward_one][start_col] == Piece.No_Piece:
+                moves.append((forward_one, start_col))
+                if forward_two is not None and board_state.board[forward_two][start_col] == Piece.No_Piece:
+                    moves.append((forward_two, start_col))
 
         # Diagonal Captures
         for col_offset in (-1, 1):
