@@ -31,7 +31,7 @@ class BoardDrawer:
             return
         
         temp_surface = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
-        radius = self.square_size // 4
+        radius = self.square_size // 8
         for move in valid_moves:
             row, col = move
             screen_x = col * self.square_size + self.square_size / 2
