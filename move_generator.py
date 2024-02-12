@@ -13,7 +13,7 @@ class MoveGenerator:
     def get_moves_for_piece(self, piece, start_position, board_state):
         if Piece.is_bishop(piece):
             return self.generate_moves(piece, start_position, self.bishop_directions, 8, board_state)
-        if Piece.is_knight(piece):
+        elif Piece.is_knight(piece):
             return self.generate_moves(piece, start_position, self.knight_directions, 2, board_state)
         elif Piece.is_rook(piece):
             return self.generate_moves(piece, start_position, self.rook_directions, 8, board_state)
