@@ -13,7 +13,7 @@ class Chess:
     LIGHT_SQUARE_COLOR = "#F0D9B5"
     DARK_SQUARE_COLOR = "#B58863"
     SELECTED_SQAURE_COLOR = "#EE5544"
-    VALID_MOVE_COLOR = "#6080a0e0"
+    VALID_MOVE_COLOR = "#33333333"
     selected_piece:Optional[Piece] = None
     selected_piece_position = None
     dragging = False    
@@ -136,14 +136,20 @@ class Chess:
 
     def draw_valid_moves(self, screen):
         if self.board_state.current_valid_moves:
+            # Create a temporary surface with per-pixel alpha capabilities
+            temp_surface = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
             radius = self.square_size // 4
+            
             for move in self.board_state.current_valid_moves:
-                # Unpack the move; assuming move is in (row, column) format
                 row, col = move
-                # Use the conversion function to get screen coordinates
                 screen_x, screen_y = self.board_pos_to_screen_pos(row, col)
-                # Draw a circle at the calculated screen position
-                pygame.draw.circle(screen, self.VALID_MOVE_COLOR, (int(screen_x), int(screen_y)), radius)
+                
+                # Draw a circle on the temporary surface instead of the main screen
+                pygame.draw.circle(temp_surface, self.VALID_MOVE_COLOR, (int(screen_x), int(screen_y)), radius)
+            
+            # Blit the temporary surface onto the main screen surface
+            screen.blit(temp_surface, (0, 0))
+
 
     def draw_pieces_from_fen(self, screen, fen):
             placement = fen.split()[0]
