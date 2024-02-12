@@ -3,7 +3,7 @@ import pygame
 class BoardDrawer:
     LIGHT_SQUARE_COLOR = "#F0D9B5"
     DARK_SQUARE_COLOR = "#B58863"
-    SELECTED_SQAURE_COLOR = "#EE5544"
+    SELECTED_SQAURE_COLOR = "#646569"
     VALID_MOVE_COLOR = "#33333333"
 
     def __init__(self, board_size, square_size):

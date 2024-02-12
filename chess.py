@@ -101,7 +101,7 @@ class Chess:
         # self.draw_board(screen)
         self.draw_pieces_from_fen(screen, self.fen.board_to_fen(self.board_state.board))
         if (self.dragging):
-            self.board_drawer.highlight_square(screen, self.drag_position)
+            self.board_drawer.highlight_square(screen, self.selected_grid_position)
             self.draw_dragged_piece(screen)
 
     def board_pos_to_screen_pos(self, row, col):
