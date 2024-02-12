@@ -1,5 +1,6 @@
 import pygame
 from typing import Optional
+from board_drawer import BoardDrawer
 from board_state import BoardState
 from fen import FEN
 from move_generator import MoveGenerator
@@ -26,21 +27,13 @@ class Chess:
     def __init__(self, board_size):
         print("Chess game initialized")
         self.board_size = board_size
-        self.square_size = board_size / 8
+        self.square_size = board_size // 8
+        self.board_drawer = BoardDrawer(self.board_size, self.square_size)
         self.pieceDrawer = PieceDrawer("assets/pieces.png")
-        self._init_board_surface()
         self.reset_board()
 
     def reset_board(self):
         self.board_state.reset_board()
-
-    def _init_board_surface(self):
-        """ Draws the static board squares onto the board surface. """
-        self.board_surface = pygame.Surface((self.board_size, self.board_size))  # Step 1: Initialize board surface
-        for (i, j) in [(i, j) for i in range(8) for j in range(8)]:
-            square_color = self.LIGHT_SQUARE_COLOR if (i + j) % 2 == 0 else self.DARK_SQUARE_COLOR
-            pygame.draw.rect(self.board_surface, square_color, (i * self.square_size, j * self.square_size, self.square_size, self.square_size))
-
 
     def pick_up_piece(self, mousePosition):
         if (self.dragging):
@@ -103,20 +96,13 @@ class Chess:
             self.pieceDrawer.draw_piece(screen, self.selected_piece, self.drag_position, (self.square_size, self.square_size))
     
     def draw(self, screen):
-        self.draw_board(screen)
-        
-        if (self.dragging):
-            self.draw_dragged_piece(screen)
-    
-    def draw_board(self, screen):
-        screen.blit(self.board_surface, (0, 0))
-        if self.selected_grid_position is not None:
-            x,y= self.selected_grid_position
-            pygame.draw.rect(screen, self.SELECTED_SQAURE_COLOR, (x * self.square_size, y * self.square_size, self.square_size, self.square_size), 4)
-            self.draw_valid_moves(screen)
-
+        self.board_drawer.draw_board(screen)
+        self.board_drawer.draw_valid_moves(screen, self.board_state.current_valid_moves)
+        # self.draw_board(screen)
         self.draw_pieces_from_fen(screen, self.fen.board_to_fen(self.board_state.board))
-        #self.pieceDrawer.draw_piece(screen, Piece.BlackKnight, (0, 0), (self.square_size, self.square_size))
+        if (self.dragging):
+            self.board_drawer.highlight_square(screen, self.drag_position)
+            self.draw_dragged_piece(screen)
 
     def board_pos_to_screen_pos(self, row, col):
         """
@@ -136,20 +122,13 @@ class Chess:
 
     def draw_valid_moves(self, screen):
         if self.board_state.current_valid_moves:
-            # Create a temporary surface with per-pixel alpha capabilities
             temp_surface = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
             radius = self.square_size // 4
-            
             for move in self.board_state.current_valid_moves:
                 row, col = move
                 screen_x, screen_y = self.board_pos_to_screen_pos(row, col)
-                
-                # Draw a circle on the temporary surface instead of the main screen
                 pygame.draw.circle(temp_surface, self.VALID_MOVE_COLOR, (int(screen_x), int(screen_y)), radius)
-            
-            # Blit the temporary surface onto the main screen surface
             screen.blit(temp_surface, (0, 0))
-
 
     def draw_pieces_from_fen(self, screen, fen):
             placement = fen.split()[0]
