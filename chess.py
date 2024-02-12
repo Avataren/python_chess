@@ -2,10 +2,7 @@ import pygame
 from typing import Optional
 from board_state import BoardState
 from fen import FEN
-from chess_move import ChessMove
-from move_executor import MoveExecutor
 from move_generator import MoveGenerator
-from move_validator import MoveValidator
 from piece_drawer import PieceDrawer
 from piece import Piece
 
@@ -61,13 +58,13 @@ class Chess:
 
     def get_square_location_from_position(self, position):
         posX, posY = position
-        return ( int(posX // self.square_size), int(posY // self.square_size))
+        return ( int(posY // self.square_size), int(posX // self.square_size))
 
     def get_piece_at_position(self, mousePosition):
-        x,y = self.get_square_location_from_position(mousePosition)
-        if (x < 0 or x > 7 or y < 0 or y > 7):
+        row,col = self.get_square_location_from_position(mousePosition)
+        if (col < 0 or col > 7 or row < 0 or row > 7):
             return None
-        return self.board_state.board[y][x]
+        return self.board_state.board[row][col]
     
     def deselect_piece(self):
         self.selected_piece = None
@@ -79,20 +76,15 @@ class Chess:
     def move_piece(self, mousePosition):
         # Logic to move a piece to a new position if the move is legal
         new_position = self.get_square_location_from_position(mousePosition)
-        
+        old_position = self.board_state.selected_piece_position
         if self.selected_piece and self.board_state.is_move_legal(new_position):
             print ("Executing move!")
-            # Execute the move if legal
-            # Update the board state accordingly
-            #moveExecutor = MoveExecutor(self.board_state.board)
-            #moveExecutor.execute_move(self.selected_piece, new_position)
-            self.board_state.board[new_position[1]][new_position[0]] = self.selected_piece
+            self.board_state.execute_move(self.selected_piece, old_position, new_position)
             self.deselect_piece()
         else:
             print("Illegal move")
             row, col = self.board_state.selected_piece_position
             self.board_state.board[row][col] = self.selected_piece
-            #moveExecutor.execute_move(self.selected_piece, self.selected_piece_position)
             self.selected_piece = None
             self.dragging = False
             self.drag_position = None
@@ -102,9 +94,9 @@ class Chess:
         self.drag_position = (mousePosition[0] - self.square_size / 2, mousePosition[1] - self.square_size / 2)
     
         col,row = self.get_square_location_from_position(mousePosition)
-        moveGenerator = MoveGenerator(self.board_state.board)
+        moveGenerator = MoveGenerator()
         if (self.debug):
-            self.board_state.current_valid_moves = moveGenerator.get_moves_for_piece(self.selected_piece, (row, col))
+            self.board_state.current_valid_moves = moveGenerator.get_moves_for_piece(self.selected_piece, (row, col), self.board_state.board)
         
     def draw_dragged_piece(self, screen):
         if self.drag_position is not None and self.selected_piece is not None:
