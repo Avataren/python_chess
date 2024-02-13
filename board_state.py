@@ -35,6 +35,9 @@ class BoardState:
         self.move_number = {Piece.Black:0, Piece.White:0}
         self.prepare()
     
+    def num_moves_without_capture(self):
+        return max(self.move_number[Piece.White], self.move_number[Piece.Black])
+    
     def end_current_turn(self):
         self.current_player_color = Piece.Black if self.current_player_color == Piece.White else Piece.White
         if (self.current_player_color == Piece.White):

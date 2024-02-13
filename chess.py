@@ -115,7 +115,7 @@ class Chess:
             self.draw_dragged_piece(screen)
 
     def update(self):
-        if (self.board_state.is_game_over):
+        if (self.board_state.is_game_over or self.board_state.num_moves_without_capture() >= 50):
             self.board_state.reset_board()
             return
         else:
@@ -125,6 +125,7 @@ class Chess:
                 print ("No valid moves available.")
                 checkmate = move_generator.is_checkmate(self.board_state.current_player_color, self.board_state)
                 print ("Checkmate: ", checkmate)
+                self.board_state.reset_board()
                 return
             else:
                 self.board_state.move_piece(rand_move.start, rand_move.end)
