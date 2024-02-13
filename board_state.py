@@ -1,5 +1,6 @@
 import copy
 import numpy as np
+from board_evaluator import BoardEvaluator
 from chess_move import ChessMove
 from fen import FEN
 from move_generator import MoveGenerator
@@ -30,9 +31,9 @@ class BoardState:
         self.has_moved = {'K': False, 'Q': False, 'k': False, 'q': False, 'KR': False, 'QR': False, 'kr': False, 'qr': False}  # Track if kings and rooks have moved for castling
         self.last_double_move = None
         self.prepare()
-        
     
     def end_current_turn(self):
+        print ("Board evaluation is ", BoardEvaluator.evaluate(self))
         self.current_player_color = Piece.Black if self.current_player_color == Piece.White else Piece.White
     
     def is_move_legal(self, new_pos):

@@ -59,3 +59,19 @@ class Piece:
             return Piece.Black
         else:
             return Piece.White    
+        
+    @staticmethod   
+    def get_piece_value(piece):
+        piece_type = piece & 7
+        if (piece_type == Piece.Pawn):
+            return 1
+        if (piece_type == Piece.Knight):
+            return 3
+        if (piece_type == Piece.Bishop):
+            return 3
+        if (piece_type == Piece.Rook):
+            return 5
+        if (piece_type == Piece.Queen):
+            return 9
+        if (piece_type == Piece.King):
+            return 1000
