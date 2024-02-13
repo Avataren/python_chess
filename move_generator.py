@@ -7,13 +7,38 @@ class MoveGenerator:
     queen_directions = [(1, 1), (1, -1), (-1, 1), (-1, -1),(0, 1), (1, 0), (0, -1), (-1, 0)]
     knight_directions = [(2, 1), (1, 2), (-1, 2), (-2, 1), (-2, -1), (-1, -2), (1, -2), (2, -1)]
     king_directions = [(1, 1), (1, 0), (1, -1), (0, 1), (0, -1), (-1, 1), (-1, 0), (-1, -1)]
-    
-    # def __init__(self):
 
     def get_moves_for_piece(self, piece, start_position, board_state):
         if piece is None or piece == Piece.No_Piece or start_position is None or board_state is None:
             return None
-        
+        potential_moves = []
+        board_state.prepare()
+        # Generate all potential moves for the piece
+        if Piece.is_bishop(piece):
+            potential_moves = self.generate_moves(piece, start_position, self.bishop_directions, 8, board_state)
+        elif Piece.is_knight(piece):
+            potential_moves = self.generate_moves(piece, start_position, self.knight_directions, 2, board_state)
+        elif Piece.is_rook(piece):
+            potential_moves = self.generate_moves(piece, start_position, self.rook_directions, 8, board_state)
+        elif Piece.is_queen(piece):
+            potential_moves = self.generate_moves(piece, start_position, self.queen_directions, 8, board_state)
+        elif Piece.is_king(piece):
+            potential_moves = self.generate_moves(piece, start_position, self.king_directions, 2, board_state)
+        else:
+            potential_moves = self.generate_pawn_moves(piece, start_position, board_state)
+
+        # Filter out moves that leave the king in check
+        valid_moves = []
+        king_position = board_state.get_king_position(Piece.get_piece_color(piece))
+        for move in potential_moves:
+            if not self.does_move_leave_king_in_check(piece, start_position, move, king_position, board_state):
+                valid_moves.append(move)
+
+        return valid_moves
+
+    def get_moves_for_piece_without_check_detection(self, piece, start_position, board_state):
+        if piece is None or piece == Piece.No_Piece or start_position is None or board_state is None:
+            return None
         if Piece.is_bishop(piece):
             return self.generate_moves(piece, start_position, self.bishop_directions, 8, board_state)
         elif Piece.is_knight(piece):
@@ -24,7 +49,18 @@ class MoveGenerator:
             return self.generate_moves(piece, start_position, self.queen_directions, 8, board_state)
         elif Piece.is_king(piece):
             return self.generate_moves(piece, start_position, self.king_directions, 2, board_state)
-        return self.generate_pawn_moves(piece, start_position, board_state)
+        else:
+            return self.generate_pawn_moves(piece, start_position, board_state)
+
+    def does_move_leave_king_in_check(self, moved_piece, start_position, end_position, king_position, board_state):
+            # Create a copy of the board to simulate the move
+            board_copy = board_state.copy()  # Assuming this method exists to create a deep copy of the board state
+            board_copy.move_piece(start_position, end_position)  # Assuming this method exists to update the board
+            # If the moved piece is the king, update the king's position for the simulation
+            if Piece.is_king(moved_piece):
+                king_position = end_position
+            # Check if the king is in check after the move
+            return self.is_king_in_check(Piece.get_piece_color(moved_piece), king_position, board_copy)
 
     def generate_moves(self, start_piece, start_position, directions, max_range, board_state):
         moves = []
@@ -103,3 +139,36 @@ class MoveGenerator:
                 print("Last move not eligible for en passant.")
 
         return moves
+    
+    def can_pawn_capture_king(self, pawn_row, pawn_col, king_position, pawn_color):
+        capture_moves = self.generate_pawn_capture_moves(pawn_row, pawn_col, pawn_color)
+        return king_position in capture_moves    
+
+    def generate_pawn_capture_moves(self, row, col, color):
+        moves = []
+        if color == Piece.Black:
+            potential_moves = [(row + 1, col - 1), (row + 1, col + 1)]
+        else:
+            potential_moves = [(row - 1, col - 1), (row - 1, col + 1)]
+
+        for move in potential_moves:
+            if 0 <= move[0] < 8 and 0 <= move[1] < 8:  # Ensure move is within board bounds
+                moves.append(move)
+        return moves    
+    
+    def is_king_in_check(self, king_color, king_position, board_state):
+        opponent_color = Piece.Black if king_color == Piece.White else Piece.White
+        
+        opponent_pieces_positions = board_state.black_positions if king_color == Piece.White else board_state.white_positions
+
+        for positioned_piece in opponent_pieces_positions:
+            row, col , opponent_piece = positioned_piece
+            if Piece.is_pawn(opponent_piece):
+                if self.can_pawn_capture_king(row, col, king_position, opponent_color):
+                    return True
+            else:
+                moves = self.get_moves_for_piece_without_check_detection(opponent_piece, (row, col), board_state)
+                if moves is not None:
+                    if king_position in moves:
+                        return True
+        return False
