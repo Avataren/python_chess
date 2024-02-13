@@ -25,7 +25,7 @@ class Chess:
     board_state = BoardState()
     selected_grid_position = None
     board_surface = None
-    ai = ChessAI(3)
+    ai = ChessAI(4)
     
     def __init__(self, board_size):
         print("Chess game initialized")
@@ -83,7 +83,7 @@ class Chess:
             print ("Executing move!")
             self.board_state.execute_move(self.selected_piece, old_position, new_position)
             self.deselect_piece()
-            
+            #self.do_next_ai_move()
         else:
             print("Illegal move")
             row, col = self.board_state.selected_piece_position
@@ -115,36 +115,60 @@ class Chess:
             self.draw_dragged_piece(screen)
 
     def update(self):
-        if (self.board_state.is_game_over or self.board_state.num_moves_without_capture() >= 50):
+        pass
+        #if (self.board_state.is_game_over or self.board_state.num_moves_without_capture() >= 50):
+        #    self.board_state.reset_board()
+        #    return
+        #self.self_play()
+
+    def random_play(self):
+        move_generator = MoveGenerator()
+        rand_move = move_generator.select_random_valid_move(self.board_state, self.board_state.current_player_color)
+        if (rand_move is None):
+            print ("No valid moves available.")
+            checkmate = move_generator.is_checkmate(self.board_state.current_player_color, self.board_state)
+            print ("Checkmate: ", checkmate)
             self.board_state.reset_board()
             return
         else:
-            move_generator = MoveGenerator()
+            self.board_state.move_piece(rand_move.start, rand_move.end)        
+
+    def self_play(self):
+        move_generator = MoveGenerator()
+        best_move_tuple = self.ai.choose_best_move(self.board_state, self.board_state.current_player_color)
+        print(f"Best move: {best_move_tuple}")
+
+        if best_move_tuple[1] is None:
+            print("No best move found, making random move:")
+            
             rand_move = move_generator.select_random_valid_move(self.board_state, self.board_state.current_player_color)
-            if (rand_move is None):
-                print ("No valid moves available.")
-                checkmate = move_generator.is_checkmate(self.board_state.current_player_color, self.board_state)
-                print ("Checkmate: ", checkmate)
-                self.board_state.reset_board()
-                return
+            # If rand_move is None (no valid moves), handle that case as well
+            if rand_move is not None:
+                best_move_tuple = (best_move_tuple[0], ChessMove(0, rand_move.start, rand_move.end))
             else:
-                self.board_state.move_piece(rand_move.start, rand_move.end)
-            # best_move_tuple = self.ai.choose_best_move(self.board_state, self.board_state.current_player_color)
-            # print(f"Best move: {best_move_tuple}")
+                print("No valid moves available.")
+                return 
 
-            # if best_move_tuple[1] is None:
-            #     print("No best move found, making random move:")
-            #     
-            #     rand_move = move_generator.select_random_valid_move(self.board_state, self.board_state.current_player_color)
-            #     # If rand_move is None (no valid moves), handle that case as well
-            #     if rand_move is not None:
-            #         best_move_tuple = (best_move_tuple[0], ChessMove(0, rand_move.start, rand_move.end))
-            #     else:
-            #         print("No valid moves available.")
-            #         return 
+        self.board_state.move_piece(best_move_tuple[1].start, best_move_tuple[1].end)
 
-            # self.board_state.move_piece(best_move_tuple[1].start, best_move_tuple[1].end)
+    def do_next_ai_move(self):
+        print ("AI move")
+        move_generator = MoveGenerator()
+        best_move_tuple = self.ai.choose_best_move(self.board_state, self.board_state.current_player_color)
+        print(f"Best move: {best_move_tuple}")
 
+        if best_move_tuple[1] is None:
+            print("No best move found, making random move:")
+            
+            rand_move = move_generator.select_random_valid_move(self.board_state, self.board_state.current_player_color)
+            # If rand_move is None (no valid moves), handle that case as well
+            if rand_move is not None:
+                best_move_tuple = (best_move_tuple[0], ChessMove(0, rand_move.start, rand_move.end))
+            else:
+                print("No valid moves available.")
+                return 
+
+        self.board_state.move_piece(best_move_tuple[1].start, best_move_tuple[1].end)
 
     def board_pos_to_screen_pos(self, row, col):
         """

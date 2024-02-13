@@ -65,16 +65,32 @@ class BoardState:
     
     def simulate_move(self, old_position, new_position):
         # Simply move the piece without any additional game logic
-        if (new_position[0] > 7 or new_position[0] < 0 or new_position[1] > 7 or new_position[1] < 0):
-            print ("Invalid move, this should not happen")
-            print (f"old_position: {old_position}, new_position: {new_position}")
-            return
-        if (old_position[0] > 7 or old_position[0] < 0 or old_position[1] > 7 or old_position[1] < 0):
-            print ("Invalid move, this should not happen")
-            print (f"old_position: {old_position}, new_position: {new_position}")
-            return
         piece = self.board[old_position[0]][old_position[1]]
+        if (piece&7) == Piece.Pawn:
+            color = Piece.get_piece_color(piece)
+            if (new_position[0] == 0 and color == Piece.White):
+                print ("Promoting pawn to queen at position ", new_position)
+                piece = Piece.WhiteQueen
+            elif (new_position[0] == 7 and color == Piece.Black):
+                print ("Promoting pawn to queen at position ", new_position)
+                piece = Piece.BlackQueen   
+                
         self.board[new_position[0]][new_position[1]] = piece
+        self.board[old_position[0]][old_position[1]] = Piece.No_Piece    
+    
+    def update_board(self, piece: Piece, old_position, new_position):
+        #Handle pawn promotion, only queen for now
+        activePiece = piece
+        if (piece&7) == Piece.Pawn:
+            color = Piece.get_piece_color(piece)
+            if (new_position[0] == 0 and color == Piece.White):
+                print ("Promoting pawn to queen at position ", new_position)
+                activePiece = Piece.WhiteQueen
+            elif (new_position[0] == 7 and color == Piece.Black):
+                print ("Promoting pawn to queen at position ", new_position)
+                activePiece = Piece.BlackQueen
+        
+        self.board[new_position[0]][new_position[1]] = activePiece
         self.board[old_position[0]][old_position[1]] = Piece.No_Piece    
     
     def execute_move(self, piece: Piece, old_position, new_position):
@@ -100,6 +116,7 @@ class BoardState:
                 self.has_moved['QR' if piece_color == Piece.White else 'qr'] = True
             elif old_position == (7, 7) or old_position == (0, 7):  # Kingside rook
                 self.has_moved['KR' if piece_color == Piece.White else 'kr'] = True
+                
         # Record the move
         self.last_move = ChessMove(piece, old_position, new_position)
         self.end_current_turn()
@@ -140,9 +157,6 @@ class BoardState:
         print("En passant capture detected!")
         self.board[captured_pawn_position[0]][captured_pawn_position[1]] = Piece.No_Piece
 
-    def update_board(self, piece: Piece, old_position, new_position):
-        self.board[new_position[0]][new_position[1]] = piece
-        self.board[old_position[0]][old_position[1]] = Piece.No_Piece
 
     def take_piece_at_position(self, position, square_size):
         # Logic to get the piece at the given position

@@ -99,8 +99,8 @@ class BoardEvaluator:
         score += self.evaluate_pawn_structure(board_state, color) * 0.25
 
         # Evaluate mobility and threats
-        #score += self.evaluate_mobility(board_state, color, active_positions)
-        #score += self.evaluate_threats(board_state, color, active_positions)
+        score += self.evaluate_mobility(board_state, color, active_positions)
+        score += self.evaluate_threats(board_state, color, active_positions)
 
         return score
 
@@ -231,19 +231,18 @@ class BoardEvaluator:
         threat_score = 0
         threat_bonus = 10  # Bonus for each threatened enemy piece
         threat_penalty = -20  # Penalty for each of the player's pieces being threatened
-
+        moveGenerator = MoveGenerator()
+        
+        attacked_squares = moveGenerator.get_attacked_squares(board_state, color)
+        
         # Threats made by the player's pieces
-        for position in active_positions:
-            for target in board_state.get_attacked_squares(position):
-                if board_state.is_enemy_piece(target, color):
-                    threat_score += threat_bonus
+        for target in attacked_squares:
+            if Piece.get_piece_color(board_state.board[target[0]][target[1]]) is not color:
+                threat_score += threat_bonus
 
-        # Threats against the player's pieces
-        opponent_color = Piece.Black if color == Piece.White else Piece.White
-        for position in board_state.get_piece_positions(opponent_color):
-            for target in board_state.get_attacked_squares(position):
-                if board_state.is_friendly_piece(target, color):
-                    threat_score += threat_penalty
+        for target in attacked_squares:
+            if Piece.get_piece_color(board_state.board[target[0]][target[1]]) is color:
+                threat_score += threat_penalty
 
         return threat_score
     
