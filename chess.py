@@ -123,7 +123,7 @@ class Chess:
             rand_move = move_generator.select_random_valid_move(self.board_state, self.board_state.current_player_color)
             if (rand_move is None):
                 print ("No valid moves available.")
-                checkmate = move_generator.is_checkmate(self.board_state, self.board_state.current_player_color)
+                checkmate = move_generator.is_checkmate(self.board_state.current_player_color, self.board_state)
                 print ("Checkmate: ", checkmate)
                 return
             else:
