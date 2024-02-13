@@ -18,6 +18,8 @@ class BoardState:
     king_position_black = None
     king_position_white = None
     
+    current_player_color = Piece.White
+    
     fen = FEN()
     def __init__(self):
         self.reset_board()    
@@ -29,6 +31,10 @@ class BoardState:
         self.last_double_move = None
         self.prepare()
         
+    
+    def end_current_turn(self):
+        self.current_player_color = Piece.Black if self.current_player_color == Piece.White else Piece.White
+    
     def is_move_legal(self, new_pos):
         row, col = new_pos
         if (self.current_valid_moves is not None):
@@ -42,6 +48,10 @@ class BoardState:
         return False    
     
     def execute_move(self, piece: Piece, old_position, new_position):
+        if (self.current_player_color != Piece.get_piece_color(piece)):
+            print ("Not your turn")
+            return
+        
         print(f"Executing move from {old_position} to {new_position}")
         
         # Handle castling logic
@@ -61,6 +71,7 @@ class BoardState:
                 self.has_moved['KR' if Piece.get_piece_color(piece) == Piece.White else 'kr'] = True
         # Record the move
         self.last_move = ChessMove(piece, old_position, new_position)
+        self.end_current_turn()
 
     def handle_castling(self, old_king_position, new_king_position):
         direction = 1 if new_king_position[1] - old_king_position[1] > 0 else -1
@@ -106,6 +117,10 @@ class BoardState:
             self.current_valid_moves = None
             return None
         piece = self.board[y][x]
+        if (self.current_player_color != Piece.get_piece_color(piece)):
+            print ("Not your turn")
+            return Piece.No_Piece
+        
         self.selected_piece_position = (y,x)
         moveGenerator = MoveGenerator()
         self.current_valid_moves = moveGenerator.get_moves_for_piece(piece, (y,x), self) # ensure row,col format

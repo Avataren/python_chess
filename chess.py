@@ -40,6 +40,10 @@ class Chess:
             print ("Already dragging a piece")
             return
         piece = self.board_state.take_piece_at_position(mousePosition, self.square_size)
+        if (piece is Piece.No_Piece):
+            #will fail if not current players turn
+            return
+        
         print (f"Selected piece: {piece}")
         self.selected_piece = piece
         mouseX, mouseY = mousePosition
@@ -67,6 +71,8 @@ class Chess:
         self.selected_piece_position = None
     
     def move_piece(self, mousePosition):
+        if self.dragging is False:
+            return
         # Logic to move a piece to a new position if the move is legal
         new_position = self.get_square_location_from_position(mousePosition)
         old_position = self.board_state.selected_piece_position
