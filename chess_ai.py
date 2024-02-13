@@ -7,8 +7,9 @@ class ChessAI:
         self.max_depth = max_depth
 
     def choose_best_move(self, board_state, color, depth=0, alpha=float('-inf'), beta=float('inf')):
+        evaluator = BoardEvaluator()
         if depth == self.max_depth or board_state.is_game_over:
-            return BoardEvaluator.evaluate(board_state, color), None
+            return evaluator.evaluate(board_state, color), None
         if color == Piece.White:  # Assuming White is maximizing
             return self.maximize(board_state, color, depth, alpha, beta)
         else:  # Assuming Black is minimizing

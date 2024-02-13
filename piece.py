@@ -75,3 +75,7 @@ class Piece:
             return 9
         if (piece_type == Piece.King):
             return 1000
+        
+    def __str__(self):
+        pieceType = "Pawn" if self.is_pawn(self) else "Knight" if self.is_knight(self) else "Bishop" if self.is_bishop(self) else "Rook" if self.is_rook(self) else "Queen" if self.is_queen(self) else "King" if self.is_king(self) else "No Piece"
+        return "Piece is a " + str(self.get_piece_color(self)) + " " + pieceType

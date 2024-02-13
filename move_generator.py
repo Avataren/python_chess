@@ -1,3 +1,4 @@
+import random
 from chess_move import ChessMove
 from piece import Piece
 
@@ -171,6 +172,27 @@ class MoveGenerator:
                 moves.append(move)
         return moves    
     
+    def get_attacked_squares(self, board_state, color):
+            attacked_squares = set()  # Use a set to avoid duplicate entries
+            for row in range(8):
+                for col in range(8):
+                    piece = board_state.board[row][col]
+                    if piece != Piece.No_Piece and Piece.get_piece_color(piece) == color:
+                        if Piece.is_pawn(piece):
+                            # Pass row and col as separate arguments, not as a tuple or piece
+                            attacked_squares.update(self.generate_pawn_capture_moves(row, col, color))
+                        elif Piece.is_knight(piece):
+                            attacked_squares.update(self.generate_moves(piece, (row, col), self.knight_directions, 1, board_state))
+                        elif Piece.is_bishop(piece):
+                            attacked_squares.update(self.generate_moves(piece, (row, col), self.bishop_directions, 8, board_state))
+                        elif Piece.is_rook(piece):
+                            attacked_squares.update(self.generate_moves(piece, (row, col), self.rook_directions, 8, board_state))
+                        elif Piece.is_queen(piece):
+                            attacked_squares.update(self.generate_moves(piece, (row, col), self.queen_directions, 8, board_state))
+                        elif Piece.is_king(piece):
+                            attacked_squares.update(self.generate_moves(piece, (row, col), self.king_directions, 1, board_state))
+            return attacked_squares
+
     def is_king_in_check(self, king_color, king_position, board_state):
         opponent_color = Piece.Black if king_color == Piece.White else Piece.White
         
@@ -282,3 +304,17 @@ class MoveGenerator:
 
         return castling_moves
     
+    def select_random_valid_move(self, board_state, color):
+        """
+        Selects a random valid move for the given color.
+        
+        :param board_state: The current state of the chess board.
+        :param color: The color (Piece.White or Piece.Black) for which to generate a move.
+        :return: A random valid ChessMove or None if no valid moves are available.
+        """
+        all_valid_moves = self.get_all_moves(board_state, color)
+
+        if not all_valid_moves:
+            return None  # No valid moves available
+
+        return random.choice(all_valid_moves)

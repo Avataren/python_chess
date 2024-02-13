@@ -3,6 +3,7 @@ from typing import Optional
 from board_drawer import BoardDrawer
 from board_state import BoardState
 from chess_ai import ChessAI
+from chess_move import ChessMove
 from fen import FEN
 from move_generator import MoveGenerator
 from piece_drawer import PieceDrawer
@@ -114,8 +115,30 @@ class Chess:
             self.draw_dragged_piece(screen)
 
     def update(self):
-        best_move = self.ai.choose_best_move(self.board_state, self.board_state.current_player_color)
-        self.board_state.move_piece(best_move[1].start, best_move[1].end)
+        if (self.board_state.is_game_over):
+            print("Game over!")
+            self.board_state.reset_board()
+            return
+        else:
+            move_generator = MoveGenerator()
+            rand_move = move_generator.select_random_valid_move(self.board_state, self.board_state.current_player_color)
+            self.board_state.move_piece(rand_move.start, rand_move.end)
+            # best_move_tuple = self.ai.choose_best_move(self.board_state, self.board_state.current_player_color)
+            # print(f"Best move: {best_move_tuple}")
+
+            # if best_move_tuple[1] is None:
+            #     print("No best move found, making random move:")
+            #     
+            #     rand_move = move_generator.select_random_valid_move(self.board_state, self.board_state.current_player_color)
+            #     # If rand_move is None (no valid moves), handle that case as well
+            #     if rand_move is not None:
+            #         best_move_tuple = (best_move_tuple[0], ChessMove(0, rand_move.start, rand_move.end))
+            #     else:
+            #         print("No valid moves available.")
+            #         return 
+
+            # self.board_state.move_piece(best_move_tuple[1].start, best_move_tuple[1].end)
+
 
     def board_pos_to_screen_pos(self, row, col):
         """

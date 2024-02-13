@@ -18,7 +18,7 @@ class BoardState:
     white_positions = []
     king_position_black = None
     king_position_white = None
-    
+    move_number = {Piece.Black:0, Piece.White:0}
     current_player_color = Piece.White
     
     fen = FEN()
@@ -32,10 +32,16 @@ class BoardState:
         self.last_double_move = None
         self.current_player_color = Piece.White
         self.is_game_over = False
+        self.move_number = {Piece.Black:0, Piece.White:0}
         self.prepare()
     
     def end_current_turn(self):
         self.current_player_color = Piece.Black if self.current_player_color == Piece.White else Piece.White
+        if (self.current_player_color == Piece.White):
+            self.move_number[Piece.White] += 1
+        else:
+            self.move_number[Piece.Black] += 1
+            
         board_mover = MoveGenerator()
         #self.prepare() # is this needed?
         if (board_mover.is_checkmate(self.current_player_color, self)):
@@ -86,6 +92,7 @@ class BoardState:
         # Record the move
         self.last_move = ChessMove(piece, old_position, new_position)
         self.end_current_turn()
+        
 
     def end_game(self):
         self.is_game_over = True
@@ -147,19 +154,25 @@ class BoardState:
         return piece    
 
     def prepare(self):
-        self.black_positions = list(self.get_all_pieces_positions_by_color(Piece.Black, self))
-        self.white_positions = list(self.get_all_pieces_positions_by_color(Piece.White, self))
+        self.black_positions = list(self.get_all_pieces_positions_by_color(Piece.Black))
+        self.white_positions = list(self.get_all_pieces_positions_by_color(Piece.White))
         self.king_position_black = next(((row, col) for row, col, piece in self.black_positions if piece == Piece.BlackKing), None)
         self.king_position_white = next(((row, col) for row, col, piece in self.white_positions if piece == Piece.WhiteKing), None)
             
     get_king_position = lambda self, color: self.king_position_black if color == Piece.Black else self.king_position_white
     
-    def get_all_pieces_positions_by_color(self, color, board_state):
+    def get_all_pieces_positions_by_color(self, color):
         for row in range(8):
             for col in range(8):
-                piece = board_state.board[row][col]
-                if Piece.get_piece_color(piece) == color:
+                piece = self.board[row][col]
+                if Piece.get_piece_color(piece) == color and piece != Piece.No_Piece:
                     yield (row, col, piece)    
+    
+    def get_pawn_positions(self, color):
+        if (color == Piece.White):
+            return [(pos[0],pos[1]) for pos in self.white_positions if Piece.is_pawn(self.board[pos[0]][pos[1]])]
+        else:
+            return [(pos[0],pos[1]) for pos in self.black_positions if Piece.is_pawn(self.board[pos[0]][pos[1]])]
     
     def move_piece(self, start_position, end_position):
         piece = self.board[start_position[0]][start_position[1]]
@@ -182,6 +195,8 @@ class BoardState:
         new_board_state.king_position_black = self.king_position_black  # Tuples are immutable, direct copy is fine
         new_board_state.king_position_white = self.king_position_white  # Tuples are immutable, direct copy is fine
         new_board_state.current_player_color = self.current_player_color  # Immutable, direct copy is fine
+        new_board_state.is_game_over = self.is_game_over
+        new_board_state.move_number = self.move_number.copy()
         return new_board_state    
     
     def debug_print_board(self):
