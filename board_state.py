@@ -44,12 +44,32 @@ class BoardState:
     def execute_move(self, piece: Piece, old_position, new_position):
         print(f"Executing move from {old_position} to {new_position}")
         
-        # Check for and handle special moves like en passant
-        self.handle_special_moves(piece, old_position, new_position)
-        # Execute the move
+        # Handle castling logic
+        if Piece.is_king(piece) and abs(new_position[1] - old_position[1]) == 2:
+            self.handle_castling(old_position, new_position)
+        
+        # Normal move execution
         self.update_board(piece, old_position, new_position)
+        
+        # Update has_moved dictionary
+        if Piece.is_king(piece):
+            self.has_moved['K' if Piece.get_piece_color(piece) == Piece.White else 'k'] = True
+        elif Piece.is_rook(piece):
+            if old_position == (7, 0) or old_position == (0, 0):  # Queenside rook
+                self.has_moved['QR' if Piece.get_piece_color(piece) == Piece.White else 'qr'] = True
+            elif old_position == (7, 7) or old_position == (0, 7):  # Kingside rook
+                self.has_moved['KR' if Piece.get_piece_color(piece) == Piece.White else 'kr'] = True
         # Record the move
         self.last_move = ChessMove(piece, old_position, new_position)
+
+    def handle_castling(self, old_king_position, new_king_position):
+        direction = 1 if new_king_position[1] - old_king_position[1] > 0 else -1
+        rook_old_col = 7 if direction == 1 else 0
+        rook_new_col = new_king_position[1] - direction  # Rook moves to the adjacent column of the king's new position
+        rook_position = (old_king_position[0], rook_old_col)
+        new_rook_position = (new_king_position[0], rook_new_col)
+        # Move the rook
+        self.update_board(self.board[rook_position[0]][rook_position[1]], rook_position, new_rook_position)
 
     def handle_special_moves(self, piece: Piece, old_position, new_position):
         if self.is_en_passant(piece, old_position, new_position):
