@@ -116,13 +116,18 @@ class Chess:
 
     def update(self):
         if (self.board_state.is_game_over):
-            print("Game over!")
             self.board_state.reset_board()
             return
         else:
             move_generator = MoveGenerator()
             rand_move = move_generator.select_random_valid_move(self.board_state, self.board_state.current_player_color)
-            self.board_state.move_piece(rand_move.start, rand_move.end)
+            if (rand_move is None):
+                print ("No valid moves available.")
+                checkmate = move_generator.is_checkmate(self.board_state, self.board_state.current_player_color)
+                print ("Checkmate: ", checkmate)
+                return
+            else:
+                self.board_state.move_piece(rand_move.start, rand_move.end)
             # best_move_tuple = self.ai.choose_best_move(self.board_state, self.board_state.current_player_color)
             # print(f"Best move: {best_move_tuple}")
 
