@@ -30,6 +30,7 @@ class BoardState:
         self.board = self.fen.fen_to_board(self.current_fen_state)
         self.has_moved = {'K': False, 'Q': False, 'k': False, 'q': False, 'KR': False, 'QR': False, 'kr': False, 'qr': False}  # Track if kings and rooks have moved for castling
         self.last_double_move = None
+        self.current_player_color = Piece.White
         self.prepare()
     
     def end_current_turn(self):
@@ -165,7 +166,7 @@ class BoardState:
         new_board_state.white_positions = list(self.white_positions) if self.white_positions is not None else None  # Shallow copy with None check
         new_board_state.king_position_black = self.king_position_black  # Tuples are immutable, direct copy is fine
         new_board_state.king_position_white = self.king_position_white  # Tuples are immutable, direct copy is fine
-
+        new_board_state.current_player_color = self.current_player_color  # Immutable, direct copy is fine
         return new_board_state    
     
     def debug_print_board(self):
