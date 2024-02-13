@@ -65,6 +65,14 @@ class BoardState:
     
     def simulate_move(self, old_position, new_position):
         # Simply move the piece without any additional game logic
+        if (new_position[0] > 7 or new_position[0] < 0 or new_position[1] > 7 or new_position[1] < 0):
+            print ("Invalid move, this should not happen")
+            print (f"old_position: {old_position}, new_position: {new_position}")
+            return
+        if (old_position[0] > 7 or old_position[0] < 0 or old_position[1] > 7 or old_position[1] < 0):
+            print ("Invalid move, this should not happen")
+            print (f"old_position: {old_position}, new_position: {new_position}")
+            return
         piece = self.board[old_position[0]][old_position[1]]
         self.board[new_position[0]][new_position[1]] = piece
         self.board[old_position[0]][old_position[1]] = Piece.No_Piece    
