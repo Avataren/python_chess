@@ -2,6 +2,7 @@ import pygame
 from typing import Optional
 from board_drawer import BoardDrawer
 from board_state import BoardState
+from chess_ai import ChessAI
 from fen import FEN
 from move_generator import MoveGenerator
 from piece_drawer import PieceDrawer
@@ -23,6 +24,7 @@ class Chess:
     board_state = BoardState()
     selected_grid_position = None
     board_surface = None
+    ai = ChessAI(3)
     
     def __init__(self, board_size):
         print("Chess game initialized")
@@ -110,6 +112,10 @@ class Chess:
         if (self.dragging):
             self.board_drawer.highlight_square(screen, self.selected_grid_position)
             self.draw_dragged_piece(screen)
+
+    def update(self):
+        best_move = self.ai.choose_best_move(self.board_state, self.board_state.current_player_color)
+        self.board_state.move_piece(best_move[1].start, best_move[1].end)
 
     def board_pos_to_screen_pos(self, row, col):
         """

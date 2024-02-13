@@ -26,6 +26,7 @@ def main():
                     running = False                    
 
         screen.fill((55, 58, 63))
+        chess.update()
         chess.draw(screen)
         pygame.display.flip()
         clock.tick(60)  # limits FPS to 60

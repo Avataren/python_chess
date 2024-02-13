@@ -13,7 +13,7 @@ class BoardState:
     selected_piece_position = None
     last_move: ChessMove = None
     has_moved = {'K': False, 'Q': False, 'k': False, 'q': False, 'KR': False, 'QR': False, 'kr': False, 'qr': False}  # Track if kings and rooks have moved for castling
-
+    is_game_over = False
     black_positions = []
     white_positions = []
     king_position_black = None
@@ -31,12 +31,13 @@ class BoardState:
         self.has_moved = {'K': False, 'Q': False, 'k': False, 'q': False, 'KR': False, 'QR': False, 'kr': False, 'qr': False}  # Track if kings and rooks have moved for castling
         self.last_double_move = None
         self.current_player_color = Piece.White
+        self.is_game_over = False
         self.prepare()
     
     def end_current_turn(self):
-        print ("Board evaluation is ", BoardEvaluator.evaluate(self))
         self.current_player_color = Piece.Black if self.current_player_color == Piece.White else Piece.White
         board_mover = MoveGenerator()
+        #self.prepare() # is this needed?
         if (board_mover.is_checkmate(self.current_player_color, self)):
             print ("Checkmate!")
             self.end_game()
@@ -64,7 +65,7 @@ class BoardState:
             print ("Not your turn")
             return
         
-        print(f"Executing move from {old_position} to {new_position}")
+        #print(f"Executing move from {old_position} to {new_position}")
         
         # Handle castling logic
         if Piece.is_king(piece) and abs(new_position[1] - old_position[1]) == 2:
@@ -87,8 +88,8 @@ class BoardState:
         self.end_current_turn()
 
     def end_game(self):
+        self.is_game_over = True
         print ("Game over!")
-        self.reset_board()
 
     def handle_castling(self, old_king_position, new_king_position):
         direction = 1 if new_king_position[1] - old_king_position[1] > 0 else -1
@@ -150,7 +151,6 @@ class BoardState:
         self.white_positions = list(self.get_all_pieces_positions_by_color(Piece.White, self))
         self.king_position_black = next(((row, col) for row, col, piece in self.black_positions if piece == Piece.BlackKing), None)
         self.king_position_white = next(((row, col) for row, col, piece in self.white_positions if piece == Piece.WhiteKing), None)
-        print("king positions (black,white)", self.king_position_black, self.king_position_white)
             
     get_king_position = lambda self, color: self.king_position_black if color == Piece.Black else self.king_position_white
     

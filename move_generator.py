@@ -1,3 +1,4 @@
+from chess_move import ChessMove
 from piece import Piece
 
 class MoveGenerator:
@@ -7,6 +8,18 @@ class MoveGenerator:
     queen_directions = [(1, 1), (1, -1), (-1, 1), (-1, -1),(0, 1), (1, 0), (0, -1), (-1, 0)]
     knight_directions = [(2, 1), (1, 2), (-1, 2), (-2, 1), (-2, -1), (-1, -2), (1, -2), (2, -1)]
     king_directions = [(1, 1), (1, 0), (1, -1), (0, 1), (0, -1), (-1, 1), (-1, 0), (-1, -1)]
+
+    def get_all_moves(self, board_state, color):
+        all_moves = []
+        for row in range(8):
+            for col in range(8):
+                piece = board_state.board[row][col]
+                if piece != Piece.No_Piece and Piece.get_piece_color(piece) == color:
+                    moves = self.get_moves_for_piece(piece, (row, col), board_state)
+                    if moves is not None:
+                        for move in moves:
+                            all_moves.append(ChessMove(piece,(row, col), move))
+        return all_moves
 
     def get_moves_for_piece(self, piece, start_position, board_state):
         if piece is None or piece == Piece.No_Piece or start_position is None or board_state is None:
@@ -117,17 +130,17 @@ class MoveGenerator:
                 if capture_piece != Piece.No_Piece and Piece.get_piece_color(capture_piece) != color:
                     moves.append((capture_row, capture_col))
 
-        print(f"Checking en passant for pawn at {start_position}")
+        #print(f"Checking en passant for pawn at {start_position}")
 
         if board_state.last_move:
             from_row, from_col = board_state.last_move.start
             to_row, to_col = board_state.last_move.end
-            print(f"Last move: from {from_row},{from_col} to {to_row},{to_col}")
+            #print(f"Last move: from {from_row},{from_col} to {to_row},{to_col}")
 
             if abs(from_row - to_row) == 2 and from_col == to_col:
-                print("Last move was a two-square pawn move.")
+                #print("Last move was a two-square pawn move.")
                 if start_position[0] == to_row and abs(start_position[1] - to_col) == 1:
-                    print("En passant condition met.")
+                    #print("En passant condition met.")
                     if Piece.get_piece_color(pawn) == Piece.White:
                         en_passant_target_row = to_row - 1  # For white pawns, move one row down
                     else:
@@ -135,10 +148,10 @@ class MoveGenerator:
 
                     en_passant_move = (en_passant_target_row, to_col)  # Target square for en passant
                     moves.append(en_passant_move)                     
-                else:
-                    print("Pawn not adjacent for en passant.")
-            else:
-                print("Last move not eligible for en passant.")
+                #else:
+                #    print("Pawn not adjacent for en passant.")
+            #else:
+            #    print("Last move not eligible for en passant.")
 
         return moves
     
@@ -176,7 +189,7 @@ class MoveGenerator:
         return False
 
     def is_checkmate(self, king_color, board_state):
-        board_state.prepare()
+        
         king_position = board_state.get_king_position(king_color)
         if not self.is_king_in_check(king_color, king_position, board_state):
             return False  # King is not in check, so it cannot be checkmate
