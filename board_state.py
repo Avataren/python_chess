@@ -36,6 +36,10 @@ class BoardState:
     def end_current_turn(self):
         print ("Board evaluation is ", BoardEvaluator.evaluate(self))
         self.current_player_color = Piece.Black if self.current_player_color == Piece.White else Piece.White
+        board_mover = MoveGenerator()
+        if (board_mover.is_checkmate(self.current_player_color, self)):
+            print ("Checkmate!")
+            self.end_game()
     
     def is_move_legal(self, new_pos):
         row, col = new_pos
@@ -48,6 +52,12 @@ class BoardState:
             print ("No moves available")
             
         return False    
+    
+    def simulate_move(self, old_position, new_position):
+        # Simply move the piece without any additional game logic
+        piece = self.board[old_position[0]][old_position[1]]
+        self.board[new_position[0]][new_position[1]] = piece
+        self.board[old_position[0]][old_position[1]] = Piece.No_Piece    
     
     def execute_move(self, piece: Piece, old_position, new_position):
         if (self.current_player_color != Piece.get_piece_color(piece)):
@@ -64,16 +74,21 @@ class BoardState:
         self.update_board(piece, old_position, new_position)
         
         # Update has_moved dictionary
+        piece_color = Piece.get_piece_color(piece)
         if Piece.is_king(piece):
-            self.has_moved['K' if Piece.get_piece_color(piece) == Piece.White else 'k'] = True
+            self.has_moved['K' if piece_color == Piece.White else 'k'] = True
         elif Piece.is_rook(piece):
             if old_position == (7, 0) or old_position == (0, 0):  # Queenside rook
-                self.has_moved['QR' if Piece.get_piece_color(piece) == Piece.White else 'qr'] = True
+                self.has_moved['QR' if piece_color == Piece.White else 'qr'] = True
             elif old_position == (7, 7) or old_position == (0, 7):  # Kingside rook
-                self.has_moved['KR' if Piece.get_piece_color(piece) == Piece.White else 'kr'] = True
+                self.has_moved['KR' if piece_color == Piece.White else 'kr'] = True
         # Record the move
         self.last_move = ChessMove(piece, old_position, new_position)
         self.end_current_turn()
+
+    def end_game(self):
+        print ("Game over!")
+        self.reset_board()
 
     def handle_castling(self, old_king_position, new_king_position):
         direction = 1 if new_king_position[1] - old_king_position[1] > 0 else -1

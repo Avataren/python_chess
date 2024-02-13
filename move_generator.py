@@ -57,7 +57,7 @@ class MoveGenerator:
     def does_move_leave_king_in_check(self, moved_piece, start_position, end_position, king_position, board_state):
             # Create a copy of the board to simulate the move
             board_copy = board_state.copy()  # Assuming this method exists to create a deep copy of the board state
-            board_copy.move_piece(start_position, end_position)  # Assuming this method exists to update the board
+            board_copy.simulate_move(start_position, end_position)  # Assuming this method exists to update the board
             # If the moved piece is the king, update the king's position for the simulation
             if Piece.is_king(moved_piece):
                 king_position = end_position
@@ -174,6 +174,35 @@ class MoveGenerator:
                     if king_position in moves:
                         return True
         return False
+
+    def is_checkmate(self, king_color, board_state):
+        board_state.prepare()
+        king_position = board_state.get_king_position(king_color)
+        if not self.is_king_in_check(king_color, king_position, board_state):
+            return False  # King is not in check, so it cannot be checkmate
+
+        # Get all pieces for the king's color
+        pieces_positions = board_state.white_positions if king_color == Piece.White else board_state.black_positions
+        
+        # Try all possible moves for all pieces of the king's color
+        for row, col, piece in pieces_positions:
+            start_position = (row, col)
+            # Generate all possible moves for this piece
+            possible_moves = self.get_moves_for_piece(piece, start_position, board_state)
+            if possible_moves is None:
+                continue
+            
+            for end_position in possible_moves:
+                # Simulate the move
+                board_copy = board_state.copy()
+                board_copy.simulate_move(start_position, end_position)
+                
+                # Check if the king is still in check after this move
+                if not self.is_king_in_check(king_color, board_copy.get_king_position(king_color), board_copy):
+                    return False  # Found a move that takes the king out of check, so it's not checkmate
+
+        return True  # No moves take the king out of check, so it's checkmate
+    
     
     def is_path_clear_for_castling(self, start_position, end_position, board_state):
         """Check if there are no pieces between the start and end positions."""

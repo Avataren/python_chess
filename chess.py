@@ -80,6 +80,7 @@ class Chess:
             print ("Executing move!")
             self.board_state.execute_move(self.selected_piece, old_position, new_position)
             self.deselect_piece()
+            
         else:
             print("Illegal move")
             row, col = self.board_state.selected_piece_position
