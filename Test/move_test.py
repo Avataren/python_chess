@@ -38,7 +38,7 @@ def move_generation_test(depth, board_state, chess, screen):
     num_moves = 0
     captures = 0
 
-    moves = move_generator.get_all_moves_for_test(board_state)
+    moves = move_generator.generate_legal_moves(board_state).copy()
 
     #print(f"Depth {depth}, Number of moves: {len(actual_moves)}")
     for move in moves:
@@ -50,7 +50,7 @@ def move_generation_test(depth, board_state, chess, screen):
             pygame.display.flip()
             time.sleep(1/10.0)
         # Get the counts from the recursive call
-        sub_moves, sub_captures = move_generation_test(depth - 1, board_state.copy(), chess, screen)
+        sub_moves, sub_captures = move_generation_test(depth - 1, board_state, chess, screen)
         num_moves += sub_moves  # Accumulate total moves
         captures += sub_captures  # Accumulate total captures
         board_state.undo_last_move()

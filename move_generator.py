@@ -68,7 +68,7 @@ class MoveGenerator:
     #                     all_moves.append(moves[0])
     #     return all_moves
 
-    def get_all_moves_for_test(self, board_state):
+    def generate_legal_moves(self, board_state):
         all_moves = []
         for row in range(8):
             for col in range(8):
