@@ -8,7 +8,6 @@ from piece import Piece
 
 class BoardState:
     board = np.empty((8, 8), dtype=Piece)
-    move_history = []
     current_valid_moves = []
     selected_piece_position = None
     last_move: ChessMove = None
@@ -23,7 +22,8 @@ class BoardState:
     
     fen = FEN()
     def __init__(self):
-        self.reset_board()    
+        self.reset_board()
+    move_history = []
 
     def reset_board(self):
         self.current_fen_state = self.fen.initial_board_configuration
@@ -34,12 +34,13 @@ class BoardState:
         self.is_game_over = False
         self.move_number = {Piece.Black:0, Piece.White:0}
         self.prepare()
-    
+
+
     def num_moves_without_capture(self):
         return max(self.move_number[Piece.White], self.move_number[Piece.Black])
     
     def end_current_turn(self):
-        self.current_player_color = Piece.Black if self.current_player_color == Piece.White else Piece.White
+        self.current_player_color = Piece.get_opposite_color(self.current_player_color)
         if (self.current_player_color == Piece.White):
             self.move_number[Piece.White] += 1
         else:
@@ -63,23 +64,10 @@ class BoardState:
             
         return False    
     
-    def simulate_move(self, old_position, new_position):
-        # Simply move the piece without any additional game logic
-        piece = self.board[old_position[0]][old_position[1]]
-        if (piece&7) == Piece.Pawn:
-            color = Piece.get_piece_color(piece)
-            if (new_position[0] == 0 and color == Piece.White):
-                print ("Promoting pawn to queen at position ", new_position)
-                piece = Piece.WhiteQueen
-            elif (new_position[0] == 7 and color == Piece.Black):
-                print ("Promoting pawn to queen at position ", new_position)
-                piece = Piece.BlackQueen   
-                
-        self.board[new_position[0]][new_position[1]] = piece
-        self.board[old_position[0]][old_position[1]] = Piece.No_Piece    
-    
-    def update_board(self, piece: Piece, old_position, new_position):
+    def update_board(self, old_position, new_position, use_piece=None):
         #Handle pawn promotion, only queen for now
+        piece = use_piece if use_piece is not None else self.board[old_position[0]][old_position[1]]
+        print (f"piece: {piece}")
         activePiece = piece
         if (piece&7) == Piece.Pawn:
             color = Piece.get_piece_color(piece)
@@ -89,7 +77,10 @@ class BoardState:
             elif (new_position[0] == 7 and color == Piece.Black):
                 print ("Promoting pawn to queen at position ", new_position)
                 activePiece = Piece.BlackQueen
-        
+
+        captured_piece = self.board[new_position[0]][new_position[1]]
+        self.last_move = ChessMove(piece, old_position, new_position, captured_piece)
+        print (f"last move: {self.last_move}, placing active piece: {activePiece}")
         self.board[new_position[0]][new_position[1]] = activePiece
         self.board[old_position[0]][old_position[1]] = Piece.No_Piece    
     
@@ -105,7 +96,8 @@ class BoardState:
             self.handle_castling(old_position, new_position)
         
         # Normal move execution
-        self.update_board(piece, old_position, new_position)
+
+        self.update_board(old_position, new_position, piece)
         
         # Update has_moved dictionary
         piece_color = Piece.get_piece_color(piece)
@@ -116,11 +108,20 @@ class BoardState:
                 self.has_moved['QR' if piece_color == Piece.White else 'qr'] = True
             elif old_position == (7, 7) or old_position == (0, 7):  # Kingside rook
                 self.has_moved['KR' if piece_color == Piece.White else 'kr'] = True
-                
+        
         # Record the move
-        self.last_move = ChessMove(piece, old_position, new_position)
+        self.prepare()
         self.end_current_turn()
         
+    def undo_last_move(self):
+        if (self.last_move is None):
+            print ("only 1 undo allowed")
+            return
+        print ("undoing last move", self.last_move)
+        self.board[self.last_move.end[0]][self.last_move.end[1]] = self.last_move.captured_piece
+        self.board[self.last_move.start[0]][self.last_move.start[1]] = self.last_move.piece
+        self.last_move = None
+        self.prepare()
 
     def end_game(self):
         self.is_game_over = True
@@ -133,7 +134,7 @@ class BoardState:
         rook_position = (old_king_position[0], rook_old_col)
         new_rook_position = (new_king_position[0], rook_new_col)
         # Move the rook
-        self.update_board(self.board[rook_position[0]][rook_position[1]], rook_position, new_rook_position)
+        self.update_board(rook_position, new_rook_position)
 
     def handle_special_moves(self, piece: Piece, old_position, new_position):
         if self.is_en_passant(piece, old_position, new_position):
@@ -179,11 +180,12 @@ class BoardState:
         return piece    
 
     def prepare(self):
+        #todo: optimize this
         self.black_positions = list(self.get_all_pieces_positions_by_color(Piece.Black))
         self.white_positions = list(self.get_all_pieces_positions_by_color(Piece.White))
         self.king_position_black = next(((row, col) for row, col, piece in self.black_positions if piece == Piece.BlackKing), None)
         self.king_position_white = next(((row, col) for row, col, piece in self.white_positions if piece == Piece.WhiteKing), None)
-            
+        
     get_king_position = lambda self, color: self.king_position_black if color == Piece.Black else self.king_position_white
     
     def get_all_pieces_positions_by_color(self, color):

@@ -93,6 +93,18 @@ class Chess:
             self.drag_position = None
         self.board_state.current_valid_moves = None
             
+    def save_fen_state(self):
+        fen = self.fen.board_to_fen(self.board_state.board)
+        file = open("fen.txt", "w")
+        file.write(fen)
+        file.close()
+
+    def load_fen_state(self):
+        self.reset_board()
+        file = open("fen.txt", "r")
+        fen = file.read()
+        self.board_state.board = self.fen.fen_to_board(fen)
+
     def update_dragging_piece_position(self, mousePosition):
         self.drag_position = (mousePosition[0] - self.square_size / 2, mousePosition[1] - self.square_size / 2)
     
@@ -115,11 +127,13 @@ class Chess:
             self.draw_dragged_piece(screen)
 
     def update(self):
-        pass
-        #if (self.board_state.is_game_over or self.board_state.num_moves_without_capture() >= 50):
-        #    self.board_state.reset_board()
-        #    return
+        
+        if (self.board_state.is_game_over or self.board_state.num_moves_without_capture() >= 50):
+            self.board_state.reset_board()
+            return
         #self.self_play()
+        #self.random_play()
+        #pass
 
     def random_play(self):
         move_generator = MoveGenerator()

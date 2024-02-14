@@ -22,6 +22,11 @@ def main():
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_r:
                     chess.reset_board()
+                if event.key == pygame.K_s:
+                    chess.save_fen_state()
+                if event.key == pygame.K_l:
+                    chess.load_fen_state()
+
                 if event.key == pygame.K_ESCAPE:
                     running = False                    
 

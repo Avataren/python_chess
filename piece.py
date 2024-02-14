@@ -60,6 +60,13 @@ class Piece:
         else:
             return Piece.White    
         
+    @staticmethod
+    def get_opposite_color(piece):
+        if piece >= Piece.Black:
+            return Piece.White
+        else:
+            return Piece.Black
+            
     @staticmethod   
     def get_piece_value(piece):
         piece_type = piece & 7

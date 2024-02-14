@@ -69,14 +69,17 @@ class MoveGenerator:
             return self.generate_pawn_moves(piece, start_position, board_state)
 
     def does_move_leave_king_in_check(self, moved_piece, start_position, end_position, king_position, board_state):
-            # Create a copy of the board to simulate the move
-            board_copy = board_state.copy()  # Assuming this method exists to create a deep copy of the board state
-            board_copy.simulate_move(start_position, end_position)  # Assuming this method exists to update the board
-            # If the moved piece is the king, update the king's position for the simulation
-            if Piece.is_king(moved_piece):
-                king_position = end_position
-            # Check if the king is in check after the move
-            return self.is_king_in_check(Piece.get_piece_color(moved_piece), king_position, board_copy)
+        # Create a copy of the board to simulate the move
+        board_state.update_board(start_position, end_position)
+        board_state.prepare()
+        # If the moved piece is the king, update the king's position for the simulation
+        if Piece.is_king(moved_piece):
+            king_position = end_position
+        # Check if the king is in check after the move
+        in_check = self.is_king_in_check(Piece.get_piece_color(moved_piece), king_position, board_state)
+        board_state.undo_last_move()
+        #print ("in check: ", in_check, " for ", moved_piece, " from ", start_position, " to ", end_position, " king position: ", king_position, " board state:\n ", board_state.board)
+        return in_check
 
     def generate_moves(self, start_piece, start_position, directions, max_range, board_state):
         moves = []
@@ -152,7 +155,7 @@ class MoveGenerator:
                 #else:
                 #    print("Pawn not adjacent for en passant.")
             #else:
-            #    print("Last move not eligible for en passant.")
+            #    ("Last move not eligible for en passant.")
 
         return moves
     
@@ -211,7 +214,6 @@ class MoveGenerator:
         return False
 
     def is_checkmate(self, king_color, board_state):
-        
         king_position = board_state.get_king_position(king_color)
         if not self.is_king_in_check(king_color, king_position, board_state):
             return False  # King is not in check, so it cannot be checkmate
@@ -229,12 +231,13 @@ class MoveGenerator:
             
             for end_position in possible_moves:
                 # Simulate the move
-                board_copy = board_state.copy()
-                board_copy.simulate_move(start_position, end_position)
-                
+                board_state.update_board(start_position, end_position)
+                board_state.prepare()
                 # Check if the king is still in check after this move
-                if not self.is_king_in_check(king_color, board_copy.get_king_position(king_color), board_copy):
+                if not self.is_king_in_check(king_color, board_state.get_king_position(king_color), board_state):
+                    board_state.undo_last_move()
                     return False  # Found a move that takes the king out of check, so it's not checkmate
+                board_state.undo_last_move()
 
         return True  # No moves take the king out of check, so it's checkmate
     

@@ -20,7 +20,7 @@ class ChessAI:
         best_move = None
         for move in MoveGenerator().get_all_moves(board_state, color):
             board_state_copy = board_state.copy()
-            board_state_copy.simulate_move(move.start, move.end)
+            board_state_copy.update_board(move.start, move.end)
             # Switch to the opponent's color for the next depth level
             opponent_color = Piece.Black if color == Piece.White else Piece.White
             score = self.choose_best_move(board_state_copy, opponent_color, depth + 1, alpha, beta)[0]
@@ -39,7 +39,7 @@ class ChessAI:
         best_move = None
         for move in MoveGenerator().get_all_moves(board_state, color):
             board_state_copy = board_state.copy()
-            board_state_copy.simulate_move(move.start, move.end)
+            board_state_copy.update_board(move.start, move.end)
             # Switch to the opponent's color for the next depth level
             opponent_color = Piece.Black if color == Piece.White else Piece.White
             score = self.choose_best_move(board_state_copy, opponent_color, depth + 1, alpha, beta)[0]
