@@ -93,8 +93,8 @@ class BoardEvaluator:
             score += self.get_adjusted_piece_value(piece, table_index, game_phase)
 
         # Encourage piece development and center control
-        score += self.evaluate_piece_development(board_state, color) * 0.5
-        score += self.evaluate_center_control(board_state, color) * 0.5
+        # score += self.evaluate_piece_development(board_state, color) * 0.5
+        # score += self.evaluate_center_control(board_state, color) * 0.5
         # Consider pawn structure in the evaluation
         #score += self.evaluate_pawn_structure(board_state, color) * 0.25
 

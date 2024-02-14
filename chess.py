@@ -25,7 +25,7 @@ class Chess:
     board_state = BoardState()
     selected_grid_position = None
     board_surface = None
-    ai = ChessAI(3)
+    ai = ChessAI(4)
     
     def __init__(self, board_size):
         print("Chess game initialized")
