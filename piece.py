@@ -52,6 +52,15 @@ class Piece:
     def is_king(piece):
         return (piece&7) == Piece.King
 
+    @staticmethod
+    def is_black_king(piece):
+        return (piece&7) == Piece.King and piece >= Piece.Black
+
+    @staticmethod
+    def is_white_king(piece):
+        return piece == Piece.King
+
+
     
     @staticmethod
     def get_piece_color(piece):
@@ -66,7 +75,7 @@ class Piece:
             return Piece.White
         else:
             return Piece.Black
-            
+
     @staticmethod   
     def get_piece_value(piece):
         piece_type = piece & 7

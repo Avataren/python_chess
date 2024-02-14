@@ -20,7 +20,9 @@ class MoveGenerator:
                     if moves is not None:
                         for move in moves:
                             all_moves.append(ChessMove(piece,(row, col), move))
-        return all_moves
+        sorted_moves = sorted(all_moves, key=lambda move: Piece.get_piece_value(move.piece))
+                            
+        return sorted_moves
 
     def get_moves_for_piece(self, piece, start_position, board_state):
         if piece is None or piece == Piece.No_Piece or start_position is None or board_state is None:

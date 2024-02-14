@@ -67,7 +67,7 @@ class BoardState:
     def update_board(self, old_position, new_position, use_piece=None):
         #Handle pawn promotion, only queen for now
         piece = use_piece if use_piece is not None else self.board[old_position[0]][old_position[1]]
-        print (f"piece: {piece}")
+        #print (f"piece: {piece}")
         activePiece = piece
         if (piece&7) == Piece.Pawn:
             color = Piece.get_piece_color(piece)
@@ -80,7 +80,7 @@ class BoardState:
 
         captured_piece = self.board[new_position[0]][new_position[1]]
         self.last_move = ChessMove(piece, old_position, new_position, captured_piece)
-        print (f"last move: {self.last_move}, placing active piece: {activePiece}")
+        #print (f"last move: {self.last_move}, placing active piece: {activePiece}")
         self.board[new_position[0]][new_position[1]] = activePiece
         self.board[old_position[0]][old_position[1]] = Piece.No_Piece    
     
@@ -117,7 +117,7 @@ class BoardState:
         if (self.last_move is None):
             print ("only 1 undo allowed")
             return
-        print ("undoing last move", self.last_move)
+        #print ("undoing last move", self.last_move)
         self.board[self.last_move.end[0]][self.last_move.end[1]] = self.last_move.captured_piece
         self.board[self.last_move.start[0]][self.last_move.start[1]] = self.last_move.piece
         self.last_move = None
@@ -186,14 +186,27 @@ class BoardState:
         self.king_position_black = next(((row, col) for row, col, piece in self.black_positions if piece == Piece.BlackKing), None)
         self.king_position_white = next(((row, col) for row, col, piece in self.white_positions if piece == Piece.WhiteKing), None)
         
-    get_king_position = lambda self, color: self.king_position_black if color == Piece.Black else self.king_position_white
-    
+    #get_king_position = lambda self, color: self.king_position_black if color == Piece.Black else self.king_position_white
+    def get_king_position(self, color):
+        for row in range(8):
+            for col in range(8):
+                piece = self.board[row][col]
+                piece_color = Piece.get_piece_color(piece)
+                if Piece.is_black_king(piece) and color == Piece.Black:
+                    return (row, col)
+                elif Piece.is_white_king(piece) and color == Piece.White:
+                    return (row, col)
+        return None  # King not found (shouldn't happen in a valid game state)
+        
     def get_all_pieces_positions_by_color(self, color):
         for row in range(8):
             for col in range(8):
                 piece = self.board[row][col]
-                if Piece.get_piece_color(piece) == color and piece != Piece.No_Piece:
-                    yield (row, col, piece)    
+                if piece == Piece.No_Piece:
+                    continue
+                if Piece.get_piece_color(piece) == color:
+                    yield (row, col, piece)
+
     
     def get_pawn_positions(self, color):
         if (color == Piece.White):

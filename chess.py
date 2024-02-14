@@ -25,7 +25,7 @@ class Chess:
     board_state = BoardState()
     selected_grid_position = None
     board_surface = None
-    ai = ChessAI(4)
+    ai = ChessAI(3)
     
     def __init__(self, board_size):
         print("Chess game initialized")
@@ -131,7 +131,7 @@ class Chess:
         if (self.board_state.is_game_over or self.board_state.num_moves_without_capture() >= 50):
             self.board_state.reset_board()
             return
-        #self.self_play()
+        self.self_play()
         #self.random_play()
         #pass
 
