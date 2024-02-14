@@ -33,7 +33,7 @@ class BoardDrawer:
         temp_surface = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
         radius = self.square_size // 8
         for move in valid_moves:
-            row, col = move
+            row, col = move.end
             screen_x = col * self.square_size + self.square_size / 2
             screen_y = row * self.square_size + self.square_size / 2
             pygame.draw.circle(temp_surface, self.VALID_MOVE_COLOR, (int(screen_x), int(screen_y)), radius)

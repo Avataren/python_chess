@@ -128,12 +128,12 @@ class Chess:
 
     def update(self):
         
-        if (self.board_state.is_game_over or self.board_state.num_moves_without_capture() >= 50):
-            self.board_state.reset_board()
-            return
-        self.self_play()
+        # if (self.board_state.is_game_over or self.board_state.num_moves_without_capture() >= 50):
+        #     self.board_state.reset_board()
+        #     return
+        # self.self_play()
         #self.random_play()
-        #pass
+        pass
 
     def random_play(self):
         move_generator = MoveGenerator()

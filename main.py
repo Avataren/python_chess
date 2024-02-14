@@ -1,4 +1,5 @@
 import pygame
+from Test.move_test import run_tests
 from chess import Chess
 
 def main():
@@ -38,4 +39,5 @@ def main():
     pygame.quit()
 
 if __name__ == "__main__":
-    main()
+#    main()
+   run_tests()

@@ -1,7 +1,6 @@
 import random
 from chess_move import ChessMove
 from piece import Piece
-
 class MoveGenerator:
     
     rook_directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
@@ -10,21 +9,39 @@ class MoveGenerator:
     knight_directions = [(2, 1), (1, 2), (-1, 2), (-2, 1), (-2, -1), (-1, -2), (1, -2), (2, -1)]
     king_directions = [(1, 1), (1, 0), (1, -1), (0, 1), (0, -1), (-1, 1), (-1, 0), (-1, -1)]
 
-    def get_all_moves(self, board_state, color):
+    def get_all_moves_for_color(self, board_state, color):
         all_moves = []
         for row in range(8):
             for col in range(8):
-                piece = board_state.board[row][col]
-                if piece != Piece.No_Piece and Piece.get_piece_color(piece) == color:
-                    moves = self.get_moves_for_piece(piece, (row, col), board_state)
-                    if moves is not None:
-                        for move in moves:
-                            all_moves.append(ChessMove(piece,(row, col), move))
+                moves = self.get_moves_for_piece((row, col), board_state)
+                if moves is not None:
+                    for move in moves:
+                        all_moves.append(move)
         sorted_moves = sorted(all_moves, key=lambda move: Piece.get_piece_value(move.piece), reverse=True)
-                            
         return sorted_moves
 
-    def get_moves_for_piece(self, piece, start_position, board_state):
+    def get_all_moves(self, board_state):
+        all_moves = []
+        for row in range(8):
+            for col in range(8):
+                moves = self.get_moves_for_piece((row, col), board_state)
+                if moves is not None:
+                    for move in moves:
+                        all_moves.append(move)
+        sorted_moves = sorted(all_moves, key=lambda move: Piece.get_piece_value(move.piece), reverse=True)
+        return sorted_moves
+
+    def get_first_of_all_moves(self, board_state):
+        all_moves = []
+        for row in range(8):
+            for col in range(8):
+                moves = self.get_moves_for_piece((row, col), board_state)
+                if moves is not None and len(moves) > 0:
+                    all_moves.append(moves.pop(0))
+        return all_moves
+
+    def get_moves_for_piece(self, start_position, board_state):
+        piece = board_state.board[start_position[0]][start_position[1]]
         if piece is None or piece == Piece.No_Piece or start_position is None or board_state is None:
             return None
         potential_moves = []
@@ -50,7 +67,7 @@ class MoveGenerator:
         king_position = board_state.get_king_position(Piece.get_piece_color(piece))
         for move in potential_moves:
             if not self.does_move_leave_king_in_check(piece, start_position, move, king_position, board_state):
-                valid_moves.append(move)
+                valid_moves.append(ChessMove(piece,start_position, (move[0],move[1]),  board_state.board[move[0]][move[1]]))
 
         return valid_moves
 
@@ -227,13 +244,13 @@ class MoveGenerator:
         for row, col, piece in pieces_positions:
             start_position = (row, col)
             # Generate all possible moves for this piece
-            possible_moves = self.get_moves_for_piece(piece, start_position, board_state)
+            possible_moves = self.get_moves_for_piece(start_position, board_state)
             if possible_moves is None:
                 continue
             
-            for end_position in possible_moves:
+            for move in possible_moves:
                 # Simulate the move
-                board_state.update_board(start_position, end_position)
+                board_state.update_board(move.start, move.end)
                 board_state.prepare()
                 # Check if the king is still in check after this move
                 if not self.is_king_in_check(king_color, board_state.get_king_position(king_color), board_state):

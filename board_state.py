@@ -52,17 +52,31 @@ class BoardState:
             print ("Checkmate!")
             self.end_game()
     
+    # def is_move_legal(self, new_pos):
+    #     row, col = new_pos
+    #     if (self.current_valid_moves is not None):
+    #         print ("valid moves available")
+    #         if ((row, col) in self.current_valid_moves):
+    #             print ("found valid position")
+    #             return True
+    #     else:
+    #         print ("No moves available")
+    #            
+    #     return False    
+    
     def is_move_legal(self, new_pos):
         row, col = new_pos
-        if (self.current_valid_moves is not None):
-            print ("valid moves available")
-            if ((row, col) in self.current_valid_moves):
-                print ("found valid position")
-                return True
+        if self.current_valid_moves:
+            print("Valid moves available")
+            for move in self.current_valid_moves:
+                if (move.end[0], move.end[1]) == (row, col):
+                    print("Found valid position")
+                    return True
         else:
-            print ("No moves available")
-            
-        return False    
+            print("No moves available")
+
+        return False
+    
     
     def update_board(self, old_position, new_position, use_piece=None):
         #Handle pawn promotion, only queen for now
@@ -79,15 +93,38 @@ class BoardState:
                 activePiece = Piece.BlackQueen
 
         captured_piece = self.board[new_position[0]][new_position[1]]
-        self.last_move = ChessMove(piece, old_position, new_position, captured_piece)
+        move = ChessMove(piece, old_position, new_position, captured_piece)
+        self.move_history.append(move)
+        #print (f"last move: {self.last_move}, placing active piece: {activePiece}")
+        self.board[new_position[0]][new_position[1]] = activePiece
+        self.board[old_position[0]][old_position[1]] = Piece.No_Piece
+
+    def simulate_move(self, old_position, new_position, use_piece=None):
+        #Handle pawn promotion, only queen for now
+        piece = use_piece if use_piece is not None else self.board[old_position[0]][old_position[1]]
+        #print (f"piece: {piece}")
+        activePiece = piece
+        if (piece&7) == Piece.Pawn:
+            color = Piece.get_piece_color(piece)
+            if (new_position[0] == 0 and color == Piece.White):
+                print ("Promoting pawn to queen at position ", new_position)
+                activePiece = Piece.WhiteQueen
+            elif (new_position[0] == 7 and color == Piece.Black):
+                print ("Promoting pawn to queen at position ", new_position)
+                activePiece = Piece.BlackQueen
+
+        captured_piece = self.board[new_position[0]][new_position[1]]
+        move = ChessMove(piece, old_position, new_position, captured_piece)
+        self.move_history.append(move)
         #print (f"last move: {self.last_move}, placing active piece: {activePiece}")
         self.board[new_position[0]][new_position[1]] = activePiece
         self.board[old_position[0]][old_position[1]] = Piece.No_Piece    
     
+    
     def execute_move(self, piece: Piece, old_position, new_position):
-        if (self.current_player_color != Piece.get_piece_color(piece)):
-            print ("Not your turn")
-            return
+        # if (self.current_player_color != Piece.get_piece_color(piece)):
+        #     print ("Not your turn")
+        #     return
         
         #print(f"Executing move from {old_position} to {new_position}")
         
@@ -114,14 +151,14 @@ class BoardState:
         self.end_current_turn()
         
     def undo_last_move(self):
-        if (self.last_move is None):
-            print ("only 1 undo allowed")
-            return
         #print ("undoing last move", self.last_move)
-        self.board[self.last_move.end[0]][self.last_move.end[1]] = self.last_move.captured_piece
-        self.board[self.last_move.start[0]][self.last_move.start[1]] = self.last_move.piece
-        self.last_move = None
-        self.prepare()
+        if (len(self.move_history) > 0):
+            last_move = self.move_history.pop()
+            self.board[last_move.end[0]][last_move.end[1]] = last_move.captured_piece
+            self.board[last_move.start[0]][last_move.start[1]] = last_move.piece
+            self.prepare()
+        else:
+            print ("No moves to undo")
 
     def end_game(self):
         self.is_game_over = True
@@ -174,7 +211,7 @@ class BoardState:
         
         self.selected_piece_position = (y,x)
         moveGenerator = MoveGenerator()
-        self.current_valid_moves = moveGenerator.get_moves_for_piece(piece, (y,x), self) # ensure row,col format
+        self.current_valid_moves = moveGenerator.get_moves_for_piece((y,x), self) # ensure row,col format
         print (f"valid moves:{self.current_valid_moves}")
         self.board[y][x] = Piece.No_Piece
         return piece    
