@@ -77,11 +77,15 @@ class BoardState:
 
         return False
     
+    def get_piece(self, row, col):
+        return self.board[row][col]
     
     def update_board(self, old_position, new_position, use_piece=None):
         #Handle pawn promotion, only queen for now
         piece = use_piece if use_piece is not None else self.board[old_position[0]][old_position[1]]
-        #print (f"piece: {piece}")
+        if (piece == Piece.No_Piece):
+            return
+
         activePiece = piece
         if (piece&7) == Piece.Pawn:
             color = Piece.get_piece_color(piece)
@@ -121,7 +125,8 @@ class BoardState:
         self.board[old_position[0]][old_position[1]] = Piece.No_Piece    
     
     
-    def execute_move(self, piece: Piece, old_position, new_position):
+    def execute_move(self, move: ChessMove):
+
         # if (self.current_player_color != Piece.get_piece_color(piece)):
         #     print ("Not your turn")
         #     return
@@ -129,21 +134,21 @@ class BoardState:
         #print(f"Executing move from {old_position} to {new_position}")
         
         # Handle castling logic
-        if Piece.is_king(piece) and abs(new_position[1] - old_position[1]) == 2:
-            self.handle_castling(old_position, new_position)
+        if Piece.is_king(move.piece) and abs(move.start[1] - move.start[1]) == 2:
+            self.handle_castling(move.start, move.end)
         
         # Normal move execution
 
-        self.update_board(old_position, new_position, piece)
+        self.update_board(move.start, move.end, move.piece)
         
         # Update has_moved dictionary
-        piece_color = Piece.get_piece_color(piece)
-        if Piece.is_king(piece):
+        piece_color = Piece.get_piece_color(move.piece)
+        if Piece.is_king(move.piece):
             self.has_moved['K' if piece_color == Piece.White else 'k'] = True
-        elif Piece.is_rook(piece):
-            if old_position == (7, 0) or old_position == (0, 0):  # Queenside rook
+        elif Piece.is_rook(move.piece):
+            if move.start == (7, 0) or move.start == (0, 0):  # Queenside rook
                 self.has_moved['QR' if piece_color == Piece.White else 'qr'] = True
-            elif old_position == (7, 7) or old_position == (0, 7):  # Kingside rook
+            elif move.start == (7, 7) or move.start == (0, 7):  # Kingside rook
                 self.has_moved['KR' if piece_color == Piece.White else 'kr'] = True
         
         # Record the move
@@ -252,11 +257,12 @@ class BoardState:
         else:
             return [(pos[0],pos[1]) for pos in self.black_positions if Piece.is_pawn(self.board[pos[0]][pos[1]])]
     
-    def move_piece(self, start_position, end_position):
-        piece = self.board[start_position[0]][start_position[1]]
-        self.execute_move(piece, start_position, end_position)
+    def move_piece(self, move):
+        
+        self.execute_move(move)
         self.current_valid_moves = None
-    
+        self.current_player_color = Piece.get_opposite_color(self.current_player_color)
+        
     def copy(self):
         # Create a new BoardState instance
         new_board_state = BoardState()

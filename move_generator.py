@@ -20,6 +20,7 @@ class MoveGenerator:
         sorted_moves = sorted(all_moves, key=lambda move: Piece.get_piece_value(move.piece), reverse=True)
         return sorted_moves
 
+
     def get_all_moves(self, board_state):
         all_moves = []
         for row in range(8):
@@ -31,19 +32,56 @@ class MoveGenerator:
         sorted_moves = sorted(all_moves, key=lambda move: Piece.get_piece_value(move.piece), reverse=True)
         return sorted_moves
 
-    def get_first_of_all_moves(self, board_state):
+    # def get_first_of_all_moves(self, board_state):
+    #     all_moves = []
+    #     for row in range(8):
+    #         for col in range(8):
+    #             if board_state.board[row][col] != Piece.No_Piece:
+    #                 moves = self.get_moves_for_piece((row, col), board_state)
+    #                 if moves is not None and len(moves) > 0:
+    #                     # Prioritize moves that capture opponent pieces
+    #                     capturing_moves = [move for move in moves if move.captured_piece != Piece.No_Piece]
+    #                     if capturing_moves:
+    #                         all_moves.append(capturing_moves[0])  # Append the first capturing move
+    #                     else:
+    #                         all_moves.append(moves[0])  # Append the first move otherwise
+    #     return all_moves
+
+    # def get_first_of_all_moves(self, board_state):
+    #     all_moves = []
+    #     for row in range(8):
+    #         for col in range(8):
+    #             if (board_state.board[row][col] != Piece.No_Piece):
+    #                 moves = self.get_moves_for_piece((row, col), board_state)
+    #                 if moves is not None and len(moves) > 0:
+    #                      all_moves.append(moves[0])
+    #     return all_moves
+
+    # def get_first_of_all_moves(self, board_state):
+    #     all_moves = []
+    #     for row in range(8):
+    #         for col in range(8):
+    #             if board_state.board[row][col] != Piece.No_Piece:
+    #                 moves = self.get_moves_for_piece((row, col), board_state)
+    #                 if moves is not None and len(moves) > 0:
+    #                     #all_moves.extend(moves)
+    #                     all_moves.append(moves[0])
+    #     return all_moves
+
+    def get_all_moves_for_test(self, board_state):
         all_moves = []
         for row in range(8):
             for col in range(8):
-                moves = self.get_moves_for_piece((row, col), board_state)
-                if moves is not None and len(moves) > 0:
-                    all_moves.append(moves.pop(0))
+                if board_state.board[row][col] != Piece.No_Piece:
+                    moves = self.get_moves_for_piece((row, col), board_state)
+                    if moves is not None:
+                        all_moves.extend(moves)
         return all_moves
 
     def get_moves_for_piece(self, start_position, board_state):
         piece = board_state.board[start_position[0]][start_position[1]]
-        if piece is None or piece == Piece.No_Piece or start_position is None or board_state is None:
-            return None
+        if piece == Piece.No_Piece:
+            return []
         potential_moves = []
         board_state.prepare()
         # Generate all potential moves for the piece
@@ -68,7 +106,8 @@ class MoveGenerator:
         for move in potential_moves:
             if not self.does_move_leave_king_in_check(piece, start_position, move, king_position, board_state):
                 valid_moves.append(ChessMove(piece,start_position, (move[0],move[1]),  board_state.board[move[0]][move[1]]))
-
+            #else:
+            #    print("Move ", move, " leaves king in check")
         return valid_moves
 
     def get_moves_for_piece_without_check_detection(self, piece, start_position, board_state):
@@ -122,7 +161,6 @@ class MoveGenerator:
                 else:
                     break  # Move is outside the board
         return moves
-
 
     def generate_pawn_moves(self, pawn, start_position, board_state):
         moves = []

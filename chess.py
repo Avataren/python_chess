@@ -81,7 +81,7 @@ class Chess:
         old_position = self.board_state.selected_piece_position
         if self.selected_piece and self.board_state.is_move_legal(new_position):
             print ("Executing move!")
-            self.board_state.execute_move(self.selected_piece, old_position, new_position)
+            self.board_state.execute_move(ChessMove(self.selected_piece, old_position, new_position))
             self.deselect_piece()
             #self.do_next_ai_move()
         else:
