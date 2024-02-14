@@ -117,11 +117,22 @@ class Chess:
         if self.drag_position is not None and self.selected_piece is not None:
             self.pieceDrawer.draw_piece(screen, self.selected_piece, self.drag_position, (self.square_size, self.square_size))
     
-    def draw(self, screen):
+    # def draw(self, screen):
+    #     self.board_drawer.draw_board(screen)
+    #     self.board_drawer.draw_valid_moves(screen, self.board_state.current_valid_moves)
+    #     # self.draw_board(screen)
+    #     self.draw_pieces_from_fen(screen, self.fen.board_to_fen(self.board_state.board))
+    #     if (self.dragging):
+    #         self.board_drawer.highlight_square(screen, self.selected_grid_position)
+    #         self.draw_dragged_piece(screen)
+
+    def draw(self, screen, custom_board_state = None):
+        if (custom_board_state is None):
+            custom_board_state = self.board_state
         self.board_drawer.draw_board(screen)
-        self.board_drawer.draw_valid_moves(screen, self.board_state.current_valid_moves)
+        self.board_drawer.draw_valid_moves(screen, custom_board_state.current_valid_moves)
         # self.draw_board(screen)
-        self.draw_pieces_from_fen(screen, self.fen.board_to_fen(self.board_state.board))
+        self.draw_pieces_from_fen(screen, self.fen.board_to_fen(custom_board_state.board))
         if (self.dragging):
             self.board_drawer.highlight_square(screen, self.selected_grid_position)
             self.draw_dragged_piece(screen)

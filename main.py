@@ -2,7 +2,10 @@ import pygame
 from Test.move_test import run_tests
 from chess import Chess
 
+test_mode = True
+
 def main():
+    global test_mode
     pygame.init()
     screen = pygame.display.set_mode((1024, 1024), pygame.SRCALPHA)
     clock = pygame.time.Clock()
@@ -32,12 +35,15 @@ def main():
                     running = False                    
 
         screen.fill((55, 58, 63))
-        chess.update()
-        chess.draw(screen)
+        if (test_mode):
+            run_tests(chess, screen)
+        else:
+            chess.update()
+            chess.draw(screen)
         pygame.display.flip()
         clock.tick(60)  # limits FPS to 60
     pygame.quit()
 
 if __name__ == "__main__":
-#    main()
-   run_tests()
+    main()
+#   run_tests()

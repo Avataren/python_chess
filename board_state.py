@@ -94,7 +94,7 @@ class BoardState:
 
         captured_piece = self.board[new_position[0]][new_position[1]]
         move = ChessMove(piece, old_position, new_position, captured_piece)
-        self.move_history.append(move)
+        self.move_history.append((move, self.has_moved.copy()))
         #print (f"last move: {self.last_move}, placing active piece: {activePiece}")
         self.board[new_position[0]][new_position[1]] = activePiece
         self.board[old_position[0]][old_position[1]] = Piece.No_Piece
@@ -115,7 +115,7 @@ class BoardState:
 
         captured_piece = self.board[new_position[0]][new_position[1]]
         move = ChessMove(piece, old_position, new_position, captured_piece)
-        self.move_history.append(move)
+        self.move_history.append((move, self.has_moved.copy()))
         #print (f"last move: {self.last_move}, placing active piece: {activePiece}")
         self.board[new_position[0]][new_position[1]] = activePiece
         self.board[old_position[0]][old_position[1]] = Piece.No_Piece    
@@ -153,7 +153,8 @@ class BoardState:
     def undo_last_move(self):
         #print ("undoing last move", self.last_move)
         if (len(self.move_history) > 0):
-            last_move = self.move_history.pop()
+            last_move, has_moved = self.move_history.pop()
+            self.has_moved = has_moved.copy()
             self.board[last_move.end[0]][last_move.end[1]] = last_move.captured_piece
             self.board[last_move.start[0]][last_move.start[1]] = last_move.piece
             self.prepare()
