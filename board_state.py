@@ -71,36 +71,7 @@ class BoardState:
         return False
     
     def get_piece(self, row, col):
-        return self.board[row][col]
-    
-
-
-    # def simulate_move(self, old_position, new_position, use_piece=None):
-    #     #Handle pawn promotion, only queen for now
-    #     piece = use_piece if use_piece is not None else self.board[old_position[0]][old_position[1]]
-    #     #print (f"piece: {piece}")
-    #     activePiece = piece
-    #     if (piece&7) == Piece.Pawn:
-    #         color = Piece.get_piece_color(piece)
-    #         if (new_position[0] == 0 and color == Piece.White):
-    #             #print ("Promoting pawn to queen at position ", new_position)
-    #             activePiece = Piece.WhiteQueen
-    #         elif (new_position[0] == 7 and color == Piece.Black):
-    #             #print ("Promoting pawn to queen at position ", new_position)
-    #             activePiece = Piece.BlackQueen
-
-        # captured_piece = self.board[new_position[0]][new_position[1]]
-        # move = ChessMove(piece, old_position, new_position, captured_piece)
-        # if self.captured_en_passant is not None:
-        #     move = ChessMove(piece, old_position, new_position, captured_piece, self.captured_en_passant_position)
-        # else:
-        #     move = ChessMove(piece, old_position, new_position, captured_piece)        
-        # self.move_history.append((move, self.has_moved.copy()))
-        # #print ("Adding move to history from simulate_move")
-        # #print (f"last move: {self.last_move}, placing active piece: {activePiece}")
-        # self.board[new_position[0]][new_position[1]] = activePiece
-        # self.board[old_position[0]][old_position[1]] = Piece.No_Piece    
-    
+        return self.board[row][col] 
     
     def execute_move(self, move: ChessMove):
 
@@ -109,11 +80,10 @@ class BoardState:
             self.handle_castling(move.start, move.end)
         
         #en passant
-        
         self.handle_special_moves(move.piece, move.start, move.end)
         self.update_board(move.start, move.end, move.piece)
 
-        # Update has_moved dictionary
+        # Update has_moved dictionary after update_move to get castling rights correct in history
         piece_color = Piece.get_piece_color(move.piece)
         if Piece.is_king(move.piece):
             self.has_moved['K' if piece_color == Piece.White else 'k'] = True
