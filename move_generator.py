@@ -145,23 +145,26 @@ class MoveGenerator:
         moves = []
         start_color = Piece.get_piece_color(start_piece)
         start_row, start_col = start_position
-        
+
         for direction in directions:
-            for i in range(1, max_range):  # Rook can move up to 7 squares in one direction
-                end_row = start_row + direction[0] * i
-                end_col = start_col + direction[1] * i
-                if 0 <= end_row < 8 and 0 <= end_col < 8:  # Ensure move is within board bounds
-                    end_piece = board_state.board[end_row][end_col]
-                    end_color = Piece.get_piece_color(end_piece)
-                    if end_piece == Piece.No_Piece:  # Empty square, valid move
-                        moves.append((end_row, end_col))
-                    elif end_color != start_color:  # Capture
-                        moves.append((end_row, end_col))
-                        break  # Blocked by a piece, can't move further in this direction
-                    else:
-                        break  # Blocked by own piece
+            dir_row, dir_col = direction
+            for i in range(1, max_range):
+                end_row = start_row + dir_row * i
+                end_col = start_col + dir_col * i
+
+                # Check if the move is within board bounds
+                if not (0 <= end_row < 8 and 0 <= end_col < 8):
+                    break
+
+                end_piece = board_state.board[end_row][end_col]
+                if end_piece == Piece.No_Piece:
+                    moves.append((end_row, end_col))
                 else:
-                    break  # Move is outside the board
+                    end_color = Piece.get_piece_color(end_piece)
+                    if end_color != start_color:
+                        moves.append((end_row, end_col))
+                    break  # Blocked by any piece
+
         return moves
 
     def generate_pawn_moves(self, pawn, start_position, board_state):
