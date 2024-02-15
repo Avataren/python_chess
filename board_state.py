@@ -19,7 +19,10 @@ class BoardState:
     current_player_color = Piece.White
     captured_en_passant = None
     captured_en_passant_position = None
-
+    castling_rook_position_start = None
+    castling_rook_position_end = None
+    castling_rook = None
+    
     fen = FEN()
     def __init__(self):
         self.reset_board()
@@ -105,6 +108,11 @@ class BoardState:
         if Piece.is_king(move.piece) and abs(move.start[1] - move.end[1]) == 2:
             self.handle_castling(move.start, move.end)
         
+        #en passant
+        
+        self.handle_special_moves(move.piece, move.start, move.end)
+        self.update_board(move.start, move.end, move.piece)
+
         # Update has_moved dictionary
         piece_color = Piece.get_piece_color(move.piece)
         if Piece.is_king(move.piece):
@@ -114,11 +122,6 @@ class BoardState:
                 self.has_moved['QR' if piece_color == Piece.White else 'qr'] = True
             elif move.start == (7, 7) or move.start == (0, 7):  # Kingside rook
                 self.has_moved['KR' if piece_color == Piece.White else 'kr'] = True
-
-        #en passant
-        
-        self.handle_special_moves(move.piece, move.start, move.end)
-        self.update_board(move.start, move.end, move.piece)
 
         # Record the move
         self.end_turn()
@@ -141,13 +144,22 @@ class BoardState:
 
         captured_piece = self.board[new_position[0]][new_position[1]]
         move = ChessMove(piece, old_position, new_position, captured_piece)
+
         if self.captured_en_passant is not None:
             #print ("Adding en passant to move history")
             move = ChessMove(piece, old_position, new_position, self.captured_en_passant, self.captured_en_passant_position)
             self.captured_en_passant = None
             self.captured_en_passant_position = None
             
-        #print ("#### Adding move to history from update_board", move)
+        elif (self.castling_rook_position_start is not None):
+            move.castle(self.board[self.castling_rook_position_start[0]][self.castling_rook_position_start[1]],self.castling_rook_position_start, self.castling_rook_position_end)
+            self.board[self.castling_rook_position_end[0]][self.castling_rook_position_end[1]] = self.board[self.castling_rook_position_start[0]][self.castling_rook_position_start[1]]
+            self.board[self.castling_rook_position_start[0]][self.castling_rook_position_start[1]] = Piece.No_Piece            
+            self.castling_rook_position_start = None
+            self.castling_rook_position_end = None
+            self.castling_rook = None        
+                
+            
         self.move_history.append((move, self.has_moved.copy()))
         #print (f"last move: {self.last_move}, placing active piece: {activePiece}")
         self.board[new_position[0]][new_position[1]] = activePiece
@@ -162,6 +174,12 @@ class BoardState:
             self.board[last_move.end[0]][last_move.end[1]] = Piece.No_Piece # Clear the destination in case its not the same as captured position
             self.board[last_move.captured_position[0]][last_move.captured_position[1]] = last_move.captured_piece
             self.board[last_move.start[0]][last_move.start[1]] = last_move.piece
+            
+            if (last_move.is_castling_move):
+                self.board[last_move.rook_end[0]][last_move.rook_end[1]] = Piece.No_Piece
+                self.board[last_move.rook_start[0]][last_move.rook_start[1]] = last_move.rook
+
+            
             self.current_player_color = Piece.get_piece_color(last_move.piece)
         else:
             print ("No moves to undo")
@@ -176,8 +194,12 @@ class BoardState:
         rook_new_col = new_king_position[1] - direction  # Rook moves to the adjacent column of the king's new position
         rook_position = (old_king_position[0], rook_old_col)
         new_rook_position = (new_king_position[0], rook_new_col)
-        # Move the rook
-        self.update_board(rook_position, new_rook_position)
+        self.castling_rook_position_start = rook_position
+        self.castling_rook_position_end = new_rook_position
+
+        # Move the rook, don't update history with update_board, since this will be recorded as one move later
+       
+        #self.update_board(rook_position, new_rook_position)
 
     def handle_special_moves(self, piece: Piece, old_position, new_position):
         if self.is_en_passant(piece, old_position, new_position):

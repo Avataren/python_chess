@@ -2,7 +2,7 @@ from piece import Piece
 
 class ChessMove:
     is_castling_move = False
-
+    
     def __init__(self, piece:Piece, start, end, captured_piece=Piece.No_Piece, captured_position=None):
         self.piece = piece
         self.start = start
@@ -18,7 +18,7 @@ class ChessMove:
         
 
     def __str__(self):
-        return f"ChessMove {self.piece} from {self.start} to {self.end}, captured: {self.captured_piece} at {self.captured_position}"
+        return f"ChessMove {self.piece} from {self.start} to {self.end}, captured: {self.captured_piece} at {self.captured_position}, is_castling_move: {self.is_castling_move}"
 
     def __repr__(self):
-        return f"ChessMove {self.piece} from {self.start} to {self.end}, captured: {self.captured_piece} at {self.captured_position}"
+        return f"ChessMove {self.piece} from {self.start} to {self.end}, captured: {self.captured_piece} at {self.captured_position}, is_castling_move: {self.is_castling_move}"
