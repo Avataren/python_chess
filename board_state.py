@@ -15,8 +15,6 @@ class BoardState:
     is_game_over = False
     black_positions = []
     white_positions = []
-    king_position_black = None
-    king_position_white = None
     move_number = {Piece.Black:0, Piece.White:0}
     current_player_color = Piece.White
     
@@ -33,7 +31,7 @@ class BoardState:
         self.current_player_color = Piece.White
         self.is_game_over = False
         self.move_number = {Piece.Black:0, Piece.White:0}
-        self.prepare()
+        #self.prepare()
 
 
     def num_moves_without_capture(self):
@@ -51,7 +49,7 @@ class BoardState:
         board_mover = MoveGenerator()
         #self.prepare() # is this needed?
         if (board_mover.is_checkmate(self.current_player_color, self)):
-            print ("Checkmate!")
+            #print ("Checkmate!")
             self.end_game()
     
     # def is_move_legal(self, new_pos):
@@ -154,7 +152,7 @@ class BoardState:
                 self.has_moved['KR' if piece_color == Piece.White else 'kr'] = True
         
         # Record the move
-        self.prepare()
+        #self.prepare()
         self.end_turn()
         
     def undo_last_move(self):
@@ -165,13 +163,12 @@ class BoardState:
             self.board[last_move.end[0]][last_move.end[1]] = last_move.captured_piece
             self.board[last_move.start[0]][last_move.start[1]] = last_move.piece
             self.current_player_color = Piece.get_piece_color(last_move.piece)
-            self.prepare()
+            #self.prepare()
         else:
             print ("No moves to undo")
 
     def end_game(self):
         self.is_game_over = True
-        print ("Game over!")
 
     def handle_castling(self, old_king_position, new_king_position):
         direction = 1 if new_king_position[1] - old_king_position[1] > 0 else -1
@@ -225,14 +222,13 @@ class BoardState:
         self.board[y][x] = Piece.No_Piece
         return piece    
 
-    def prepare(self):
-        #todo: optimize this
-        self.black_positions = list(self.get_all_pieces_positions_by_color(Piece.Black))
-        self.white_positions = list(self.get_all_pieces_positions_by_color(Piece.White))
-        self.king_position_black = next(((row, col) for row, col, piece in self.black_positions if piece == Piece.BlackKing), None)
-        self.king_position_white = next(((row, col) for row, col, piece in self.white_positions if piece == Piece.WhiteKing), None)
+    # def prepare(self):
+    #     #todo: optimize this
+    #     self.black_positions = list(self.get_all_pieces_positions_by_color(Piece.Black))
+    #     self.white_positions = list(self.get_all_pieces_positions_by_color(Piece.White))
+    #     self.king_position_black = next(((row, col) for row, col, piece in self.black_positions if piece == Piece.BlackKing), None)
+    #     self.king_position_white = next(((row, col) for row, col, piece in self.white_positions if piece == Piece.WhiteKing), None)
         
-    #get_king_position = lambda self, color: self.king_position_black if color == Piece.Black else self.king_position_white
     def get_king_position(self, color):
         for row in range(8):
             for col in range(8):
@@ -245,20 +241,26 @@ class BoardState:
         return None  # King not found (shouldn't happen in a valid game state)
         
     def get_all_pieces_positions_by_color(self, color):
+        pieces = []
         for row in range(8):
             for col in range(8):
                 piece = self.board[row][col]
                 if piece == Piece.No_Piece:
                     continue
                 if Piece.get_piece_color(piece) == color:
-                    yield (row, col, piece)
+                    #yield (row, col, piece)
+                    pieces.append((row, col, piece))
+        return pieces
 
     
     def get_pawn_positions(self, color):
-        if (color == Piece.White):
-            return [(pos[0],pos[1]) for pos in self.white_positions if Piece.is_pawn(self.board[pos[0]][pos[1]])]
-        else:
-            return [(pos[0],pos[1]) for pos in self.black_positions if Piece.is_pawn(self.board[pos[0]][pos[1]])]
+        for (row, col, piece) in self.get_all_pieces_positions_by_color(color):
+            if Piece.is_pawn(piece):
+                yield (row, col)
+        # if (color == Piece.White):
+        #     return [(pos[0],pos[1]) for pos in self.white_positions if Piece.is_pawn(self.board[pos[0]][pos[1]])]
+        # else:
+        #     return [(pos[0],pos[1]) for pos in self.black_positions if Piece.is_pawn(self.board[pos[0]][pos[1]])]
     
     def make_move(self, move):
         self.execute_move(move)
@@ -275,10 +277,6 @@ class BoardState:
         new_board_state.selected_piece_position = self.selected_piece_position  # Tuples are immutable, direct copy is fine
         new_board_state.last_move = copy.deepcopy(self.last_move) if self.last_move is not None else None  # Deep copy with None check
         new_board_state.has_moved = self.has_moved.copy() if self.has_moved is not None else None  # Shallow copy of the dictionary with None check
-        new_board_state.black_positions = list(self.black_positions) if self.black_positions is not None else None  # Shallow copy with None check
-        new_board_state.white_positions = list(self.white_positions) if self.white_positions is not None else None  # Shallow copy with None check
-        new_board_state.king_position_black = self.king_position_black  # Tuples are immutable, direct copy is fine
-        new_board_state.king_position_white = self.king_position_white  # Tuples are immutable, direct copy is fine
         new_board_state.current_player_color = self.current_player_color  # Immutable, direct copy is fine
         new_board_state.is_game_over = self.is_game_over
         new_board_state.move_number = self.move_number.copy()

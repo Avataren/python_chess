@@ -47,7 +47,7 @@ def move_generation_test(depth, board_state, chess, screen):
         if chess is not None and screen is not None:
             chess.draw(screen, board_state)
             pygame.display.flip()
-            time.sleep(1/1000)
+            time.sleep(1/10000)
         # Get the counts from the recursive call
         sub_moves, sub_captures = move_generation_test(depth - 1, board_state, chess, screen)
         num_moves += sub_moves  # Accumulate total moves

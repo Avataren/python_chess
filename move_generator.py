@@ -85,7 +85,7 @@ class MoveGenerator:
         if piece == Piece.No_Piece:
             return []
         potential_moves = []
-        board_state.prepare()
+        #board_state.prepare()
         # Generate all potential moves for the piece
         if Piece.is_bishop(piece):
             potential_moves = self.generate_moves(piece, start_position, self.bishop_directions, 8, board_state)
@@ -108,11 +108,12 @@ class MoveGenerator:
         for move in potential_moves:
             if not self.does_move_leave_king_in_check(piece, start_position, move, king_position, board_state):
                 valid_moves.append(ChessMove(piece,start_position, (move[0],move[1]),  board_state.board[move[0]][move[1]]))
-            #else:
-            #    print("Move ", move, " leaves king in check")
+            else:
+                print("Move ", move, " leaves king in check")
         return valid_moves
 
-    def get_moves_for_piece_without_check_detection(self, piece, start_position, board_state):
+    def get_moves_for_piece_without_check_detection(self, start_position, board_state):
+        piece = board_state.board[start_position[0]][start_position[1]]
         if piece is None or piece == Piece.No_Piece or start_position is None or board_state is None:
             return None
         if Piece.is_bishop(piece):
@@ -131,7 +132,7 @@ class MoveGenerator:
     def does_move_leave_king_in_check(self, moved_piece, start_position, end_position, king_position, board_state):
         # Create a copy of the board to simulate the move
         board_state.update_board(start_position, end_position)
-        board_state.prepare()
+        #board_state.prepare()
         # If the moved piece is the king, update the king's position for the simulation
         if Piece.is_king(moved_piece):
             king_position = end_position
@@ -166,6 +167,8 @@ class MoveGenerator:
                     break  # Blocked by any piece
 
         return moves
+    
+    
 
     def generate_pawn_moves(self, pawn, start_position, board_state):
         moves = []
@@ -261,15 +264,18 @@ class MoveGenerator:
     def is_king_in_check(self, king_color, king_position, board_state):
         opponent_color = Piece.Black if king_color == Piece.White else Piece.White
         
-        opponent_pieces_positions = board_state.black_positions if king_color == Piece.White else board_state.white_positions
-
+        opponent_pieces_positions = board_state.get_all_pieces_positions_by_color(opponent_color)
+        if (opponent_pieces_positions is None):
+            print ("No opponent pieces!")
+            return False
+        
         for positioned_piece in opponent_pieces_positions:
             row, col , opponent_piece = positioned_piece
             if Piece.is_pawn(opponent_piece):
                 if self.can_pawn_capture_king(row, col, king_position, opponent_color):
                     return True
             else:
-                moves = self.get_moves_for_piece_without_check_detection(opponent_piece, (row, col), board_state)
+                moves = self.get_moves_for_piece_without_check_detection((row, col), board_state)
                 if moves is not None:
                     if king_position in moves:
                         return True
