@@ -39,8 +39,10 @@ class BoardState:
     def num_moves_without_capture(self):
         return max(self.move_number[Piece.White], self.move_number[Piece.Black])
     
-    def end_current_turn(self):
+    def end_turn(self):
         self.current_player_color = Piece.get_opposite_color(self.current_player_color)
+        #print ("end turn")
+        #print (self.current_player_color)
         if (self.current_player_color == Piece.White):
             self.move_number[Piece.White] += 1
         else:
@@ -153,7 +155,7 @@ class BoardState:
         
         # Record the move
         self.prepare()
-        self.end_current_turn()
+        self.end_turn()
         
     def undo_last_move(self):
         #print ("undoing last move", self.last_move)
@@ -162,6 +164,7 @@ class BoardState:
             self.has_moved = has_moved.copy()
             self.board[last_move.end[0]][last_move.end[1]] = last_move.captured_piece
             self.board[last_move.start[0]][last_move.start[1]] = last_move.piece
+            self.current_player_color = Piece.get_piece_color(last_move.piece)
             self.prepare()
         else:
             print ("No moves to undo")
@@ -257,11 +260,9 @@ class BoardState:
         else:
             return [(pos[0],pos[1]) for pos in self.black_positions if Piece.is_pawn(self.board[pos[0]][pos[1]])]
     
-    def move_piece(self, move):
-        
+    def make_move(self, move):
         self.execute_move(move)
         self.current_valid_moves = None
-        self.current_player_color = Piece.get_opposite_color(self.current_player_color)
         
     def copy(self):
         # Create a new BoardState instance

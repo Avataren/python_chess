@@ -14,7 +14,7 @@ from piece import Piece
 #     for move in moves:
 #         if move.captured_piece is not Piece.No_Piece:
 #             captures += 1
-#         board_state.move_piece(move.start, move.end)    
+#         board_state.make_move(move.start, move.end)    
 #         # Get the counts from the recursive call
 #         sub_moves, sub_captures = move_generation_test(depth - 1, board_state)
 #         num_moves += sub_moves  # Accumulate total moves
@@ -40,15 +40,14 @@ def move_generation_test(depth, board_state, chess, screen):
 
     moves = move_generator.generate_legal_moves(board_state).copy()
 
-    #print(f"Depth {depth}, Number of moves: {len(actual_moves)}")
     for move in moves:
         if move.captured_piece is not Piece.No_Piece:
             captures += 1
-        board_state.execute_move(move)
+        board_state.make_move(move)
         if chess is not None and screen is not None:
             chess.draw(screen, board_state)
             pygame.display.flip()
-            time.sleep(1/10.0)
+            time.sleep(1/1000)
         # Get the counts from the recursive call
         sub_moves, sub_captures = move_generation_test(depth - 1, board_state, chess, screen)
         num_moves += sub_moves  # Accumulate total moves
@@ -59,7 +58,7 @@ def move_generation_test(depth, board_state, chess, screen):
 def run_tests(chess = None, screen = None):
     board_state = BoardState()
     board_state.reset_board()
-    for depth in range(0, 4):
+    for depth in range(0, 7):
         start_time = time.time()
         count, captures = move_generation_test(depth, board_state, chess, screen)
         end_time = time.time()

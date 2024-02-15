@@ -72,10 +72,12 @@ class MoveGenerator:
         all_moves = []
         for row in range(8):
             for col in range(8):
-                if board_state.board[row][col] != Piece.No_Piece:
-                    moves = self.get_moves_for_piece((row, col), board_state)
-                    if moves is not None:
-                        all_moves.extend(moves)
+                piece = board_state.board[row][col]
+                if (piece == Piece.No_Piece or Piece.get_piece_color(piece) != board_state.current_player_color):
+                    continue
+                moves = self.get_moves_for_piece((row, col), board_state)
+                if moves is not None:
+                    all_moves.extend(moves)
         return all_moves
 
     def get_moves_for_piece(self, start_position, board_state):

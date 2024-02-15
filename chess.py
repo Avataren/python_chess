@@ -156,7 +156,7 @@ class Chess:
             self.board_state.reset_board()
             return
         else:
-            self.board_state.move_piece(rand_move.start, rand_move.end)        
+            self.board_state.make_move(rand_move.start, rand_move.end)        
 
     def self_play(self):
         move_generator = MoveGenerator()
@@ -174,7 +174,7 @@ class Chess:
                 print("No valid moves available.")
                 return 
 
-        self.board_state.move_piece(best_move_tuple[1].start, best_move_tuple[1].end)
+        self.board_state.make_move(best_move_tuple[1].start, best_move_tuple[1].end)
 
     def do_next_ai_move(self):
         print ("AI move")
@@ -193,7 +193,7 @@ class Chess:
                 print("No valid moves available.")
                 return 
 
-        self.board_state.move_piece(best_move_tuple[1].start, best_move_tuple[1].end)
+        self.board_state.make_move(best_move_tuple[1].start, best_move_tuple[1].end)
 
     def board_pos_to_screen_pos(self, row, col):
         """

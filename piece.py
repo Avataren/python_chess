@@ -107,4 +107,8 @@ class Piece(IntEnum):
             if self.is_king(self)
             else "No Piece"
         )
-        return "Piece is a " + str(self.get_piece_color(self)) + " " + pieceType
+        color = "White"
+        if self >= Piece.Black:
+            color = "Black"
+      
+        return "Piece is a " + color + " " + pieceType
