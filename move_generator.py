@@ -108,8 +108,8 @@ class MoveGenerator:
         for move in potential_moves:
             if not self.does_move_leave_king_in_check(piece, start_position, move, king_position, board_state):
                 valid_moves.append(ChessMove(piece,start_position, (move[0],move[1]),  board_state.board[move[0]][move[1]]))
-            else:
-                print("Move ", move, " leaves king in check")
+            #else:
+            #    print("Move ", move, " leaves king in check")
         return valid_moves
 
     def get_moves_for_piece_without_check_detection(self, start_position, board_state):
