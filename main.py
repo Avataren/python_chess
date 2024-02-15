@@ -30,6 +30,8 @@ def main():
                     chess.save_fen_state()
                 if event.key == pygame.K_l:
                     chess.load_fen_state()
+                if event.key == pygame.K_u:
+                    chess.undo_last_move()
 
                 if event.key == pygame.K_ESCAPE:
                     running = False                    

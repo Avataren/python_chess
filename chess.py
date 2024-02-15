@@ -38,6 +38,9 @@ class Chess:
     def reset_board(self):
         self.board_state.reset_board()
 
+    def undo_last_move(self):
+        self.board_state.undo_last_move()
+
     def pick_up_piece(self, mousePosition):
         if (self.dragging):
             print ("Already dragging a piece")

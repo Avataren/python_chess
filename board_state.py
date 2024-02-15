@@ -33,8 +33,8 @@ class BoardState:
         self.current_player_color = Piece.White
         self.is_game_over = False
         self.move_number = {Piece.Black:0, Piece.White:0}
-        #self.prepare()
-
+        self.captured_en_passant = None
+        self.captured_en_passant_position = None        
 
     def num_moves_without_capture(self):
         return max(self.move_number[Piece.White], self.move_number[Piece.Black])
@@ -54,18 +54,6 @@ class BoardState:
             #print ("Checkmate!")
             self.end_game()
     
-    # def is_move_legal(self, new_pos):
-    #     row, col = new_pos
-    #     if (self.current_valid_moves is not None):
-    #         print ("valid moves available")
-    #         if ((row, col) in self.current_valid_moves):
-    #             print ("found valid position")
-    #             return True
-    #     else:
-    #         print ("No moves available")
-    #            
-    #     return False    
-    
     def is_move_legal(self, new_pos):
         row, col = new_pos
         if self.current_valid_moves:
@@ -82,6 +70,59 @@ class BoardState:
     def get_piece(self, row, col):
         return self.board[row][col]
     
+
+
+    # def simulate_move(self, old_position, new_position, use_piece=None):
+    #     #Handle pawn promotion, only queen for now
+    #     piece = use_piece if use_piece is not None else self.board[old_position[0]][old_position[1]]
+    #     #print (f"piece: {piece}")
+    #     activePiece = piece
+    #     if (piece&7) == Piece.Pawn:
+    #         color = Piece.get_piece_color(piece)
+    #         if (new_position[0] == 0 and color == Piece.White):
+    #             #print ("Promoting pawn to queen at position ", new_position)
+    #             activePiece = Piece.WhiteQueen
+    #         elif (new_position[0] == 7 and color == Piece.Black):
+    #             #print ("Promoting pawn to queen at position ", new_position)
+    #             activePiece = Piece.BlackQueen
+
+        # captured_piece = self.board[new_position[0]][new_position[1]]
+        # move = ChessMove(piece, old_position, new_position, captured_piece)
+        # if self.captured_en_passant is not None:
+        #     move = ChessMove(piece, old_position, new_position, captured_piece, self.captured_en_passant_position)
+        # else:
+        #     move = ChessMove(piece, old_position, new_position, captured_piece)        
+        # self.move_history.append((move, self.has_moved.copy()))
+        # #print ("Adding move to history from simulate_move")
+        # #print (f"last move: {self.last_move}, placing active piece: {activePiece}")
+        # self.board[new_position[0]][new_position[1]] = activePiece
+        # self.board[old_position[0]][old_position[1]] = Piece.No_Piece    
+    
+    
+    def execute_move(self, move: ChessMove):
+
+        # Handle castling logic
+        if Piece.is_king(move.piece) and abs(move.start[1] - move.end[1]) == 2:
+            self.handle_castling(move.start, move.end)
+        
+        # Update has_moved dictionary
+        piece_color = Piece.get_piece_color(move.piece)
+        if Piece.is_king(move.piece):
+            self.has_moved['K' if piece_color == Piece.White else 'k'] = True
+        elif Piece.is_rook(move.piece):
+            if move.start == (7, 0) or move.start == (0, 0):  # Queenside rook
+                self.has_moved['QR' if piece_color == Piece.White else 'qr'] = True
+            elif move.start == (7, 7) or move.start == (0, 7):  # Kingside rook
+                self.has_moved['KR' if piece_color == Piece.White else 'kr'] = True
+
+        #en passant
+        
+        self.handle_special_moves(move.piece, move.start, move.end)
+        self.update_board(move.start, move.end, move.piece)
+
+        # Record the move
+        self.end_turn()
+        
     def update_board(self, old_position, new_position, use_piece=None):
         #Handle pawn promotion, only queen for now
         piece = use_piece if use_piece is not None else self.board[old_position[0]][old_position[1]]
@@ -112,63 +153,13 @@ class BoardState:
         self.board[new_position[0]][new_position[1]] = activePiece
         self.board[old_position[0]][old_position[1]] = Piece.No_Piece
 
-    def simulate_move(self, old_position, new_position, use_piece=None):
-        #Handle pawn promotion, only queen for now
-        piece = use_piece if use_piece is not None else self.board[old_position[0]][old_position[1]]
-        #print (f"piece: {piece}")
-        activePiece = piece
-        if (piece&7) == Piece.Pawn:
-            color = Piece.get_piece_color(piece)
-            if (new_position[0] == 0 and color == Piece.White):
-                #print ("Promoting pawn to queen at position ", new_position)
-                activePiece = Piece.WhiteQueen
-            elif (new_position[0] == 7 and color == Piece.Black):
-                #print ("Promoting pawn to queen at position ", new_position)
-                activePiece = Piece.BlackQueen
-
-        captured_piece = self.board[new_position[0]][new_position[1]]
-        move = ChessMove(piece, old_position, new_position, captured_piece)
-        if self.captured_en_passant is not None:
-            move = ChessMove(piece, old_position, new_position, captured_piece, self.captured_en_passant_position)
-        else:
-            move = ChessMove(piece, old_position, new_position, captured_piece)        
-        self.move_history.append((move, self.has_moved.copy()))
-        #print ("Adding move to history from simulate_move")
-        #print (f"last move: {self.last_move}, placing active piece: {activePiece}")
-        self.board[new_position[0]][new_position[1]] = activePiece
-        self.board[old_position[0]][old_position[1]] = Piece.No_Piece    
-    
-    
-    def execute_move(self, move: ChessMove):
-
-        # Handle castling logic
-        if Piece.is_king(move.piece) and abs(move.start[1] - move.end[1]) == 2:
-            self.handle_castling(move.start, move.end)
-        
-        # Update has_moved dictionary
-        piece_color = Piece.get_piece_color(move.piece)
-        if Piece.is_king(move.piece):
-            self.has_moved['K' if piece_color == Piece.White else 'k'] = True
-        elif Piece.is_rook(move.piece):
-            if move.start == (7, 0) or move.start == (0, 0):  # Queenside rook
-                self.has_moved['QR' if piece_color == Piece.White else 'qr'] = True
-            elif move.start == (7, 7) or move.start == (0, 7):  # Kingside rook
-                self.has_moved['KR' if piece_color == Piece.White else 'kr'] = True
-
-        #en passant
-        
-        self.handle_special_moves(move.piece, move.start, move.end)
-        self.update_board(move.start, move.end, move.piece)
-
-        # Record the move
-        self.end_turn()
-        
     def undo_last_move(self):
         
         if (len(self.move_history) > 0):
             last_move, has_moved = self.move_history.pop()
-            #print ("##### undoing last move", last_move)
+            # print ("##### undoing last move", last_move)
             self.has_moved = has_moved.copy()
+            self.board[last_move.end[0]][last_move.end[1]] = Piece.No_Piece # Clear the destination in case its not the same as captured position
             self.board[last_move.captured_position[0]][last_move.captured_position[1]] = last_move.captured_piece
             self.board[last_move.start[0]][last_move.start[1]] = last_move.piece
             self.current_player_color = Piece.get_piece_color(last_move.piece)
