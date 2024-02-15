@@ -331,7 +331,7 @@ class MoveGenerator:
                 piece = board_state.board[row][col]
                 if piece != Piece.No_Piece and Piece.get_piece_color(piece) == opponent_color:
                     # Generate moves for this opponent piece
-                    moves = self.get_moves_for_piece_without_check_detection(piece, (row, col), board_state)
+                    moves = self.get_moves_for_piece_without_check_detection((row, col), board_state)
 
                     # Check if any move targets the square in question
                     if square in moves:
