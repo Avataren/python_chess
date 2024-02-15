@@ -57,8 +57,8 @@ def move_generation_test(depth, board_state, chess, screen):
 
 def run_tests(chess = None, screen = None):
     board_state = BoardState()
-    board_state.reset_board()
-    for depth in range(0, 7):
+    for depth in range(0, 8):
+        board_state.reset_board()
         start_time = time.time()
         count, captures = move_generation_test(depth, board_state, chess, screen)
         end_time = time.time()

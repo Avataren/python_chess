@@ -32,42 +32,6 @@ class MoveGenerator:
         sorted_moves = sorted(all_moves, key=lambda move: Piece.get_piece_value(move.piece), reverse=True)
         return sorted_moves
 
-    # def get_first_of_all_moves(self, board_state):
-    #     all_moves = []
-    #     for row in range(8):
-    #         for col in range(8):
-    #             if board_state.board[row][col] != Piece.No_Piece:
-    #                 moves = self.get_moves_for_piece((row, col), board_state)
-    #                 if moves is not None and len(moves) > 0:
-    #                     # Prioritize moves that capture opponent pieces
-    #                     capturing_moves = [move for move in moves if move.captured_piece != Piece.No_Piece]
-    #                     if capturing_moves:
-    #                         all_moves.append(capturing_moves[0])  # Append the first capturing move
-    #                     else:
-    #                         all_moves.append(moves[0])  # Append the first move otherwise
-    #     return all_moves
-
-    # def get_first_of_all_moves(self, board_state):
-    #     all_moves = []
-    #     for row in range(8):
-    #         for col in range(8):
-    #             if (board_state.board[row][col] != Piece.No_Piece):
-    #                 moves = self.get_moves_for_piece((row, col), board_state)
-    #                 if moves is not None and len(moves) > 0:
-    #                      all_moves.append(moves[0])
-    #     return all_moves
-
-    # def get_first_of_all_moves(self, board_state):
-    #     all_moves = []
-    #     for row in range(8):
-    #         for col in range(8):
-    #             if board_state.board[row][col] != Piece.No_Piece:
-    #                 moves = self.get_moves_for_piece((row, col), board_state)
-    #                 if moves is not None and len(moves) > 0:
-    #                     #all_moves.extend(moves)
-    #                     all_moves.append(moves[0])
-    #     return all_moves
-
     def generate_legal_moves(self, board_state):
         all_moves = []
         for row in range(8):
@@ -139,7 +103,6 @@ class MoveGenerator:
         # Check if the king is in check after the move
         in_check = self.is_king_in_check(Piece.get_piece_color(moved_piece), king_position, board_state)
         board_state.undo_last_move()
-        #print ("in check: ", in_check, " for ", moved_piece, " from ", start_position, " to ", end_position, " king position: ", king_position, " board state:\n ", board_state.board)
         return in_check
 
     def generate_moves(self, start_piece, start_position, directions, max_range, board_state):
@@ -200,10 +163,11 @@ class MoveGenerator:
                     moves.append((capture_row, capture_col))
 
         #print(f"Checking en passant for pawn at {start_position}")
-
-        if board_state.last_move:
-            from_row, from_col = board_state.last_move.start
-            to_row, to_col = board_state.last_move.end
+        last_move_tuple = board_state.move_history[-1] if len(board_state.move_history) > 0 else None
+        if last_move_tuple:
+            last_move, _ = last_move_tuple
+            from_row, from_col = last_move.start
+            to_row, to_col = last_move.end
             #print(f"Last move: from {from_row},{from_col} to {to_row},{to_col}")
 
             if abs(from_row - to_row) == 2 and from_col == to_col:
@@ -346,13 +310,10 @@ class MoveGenerator:
         if (self.is_king_in_check(king_color, king_position, board_state)):
             return False
 
-        if not self.is_path_clear_for_castling(king_position, rook_position, board_state):
-            return False
-
         # Check if the king moves through an attacked square
         direction = 1 if rook_position[1] > king_position[1] else -1
         for offset in range(1, 3):
-            if self.is_square_under_attack((king_position[0], king_position[1] + offset * direction), king_color, board_state):
+            if (board_state.board[king_position[0]][king_position[1] + offset * direction] != Piece.No_Piece):
                 return False
 
         return True

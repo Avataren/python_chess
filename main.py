@@ -2,7 +2,7 @@ import pygame
 from Test.move_test import run_tests
 from chess import Chess
 
-test_mode = False
+test_mode = True
 
 def main():
     global test_mode
