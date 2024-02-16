@@ -40,8 +40,8 @@ def main():
 
             screen.fill((55, 58, 63))
             if (test_mode):
-                run_tests(chess, screen)
-                #run_tests()
+                #run_tests(chess, screen)
+                run_tests()
             else:
                 chess.update()
                 chess.draw(screen)
