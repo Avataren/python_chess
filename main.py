@@ -3,7 +3,7 @@ import traceback
 from Test.move_test import run_tests
 from chess import Chess
 
-test_mode = True
+test_mode = False
 
 def main():
     global test_mode
@@ -29,9 +29,9 @@ def main():
                     if event.key == pygame.K_r:
                         chess.reset_board()
                     if event.key == pygame.K_s:
-                        chess.save_fen_state()
+                        chess.board_state.save()
                     if event.key == pygame.K_l:
-                        chess.load_fen_state()
+                        chess.board_state.load()
                     if event.key == pygame.K_u:
                         chess.undo_last_move()
 

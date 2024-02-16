@@ -1,4 +1,5 @@
 import copy
+import pickle
 import numpy as np
 from board_evaluator import BoardEvaluator
 from chess_move import ChessMove
@@ -27,6 +28,21 @@ class BoardState:
         self.reset_board()
     move_history = []
 
+    def save(self):
+        data_to_save = {
+            'fen': self.fen.board_state_to_fen(self),
+            'move_history': self.move_history
+        }
+        with open("game.chs", "wb") as file:
+            pickle.dump(data_to_save, file)
+
+    def load(self):
+        with open("game.chs", "rb") as file:
+            loaded_data = pickle.load(file)
+        fen_state = loaded_data['fen']
+        self.fen.fen_to_board_state(fen_state, self)
+        self.move_history = loaded_data['move_history']
+        
     def reset_board(self):
         self.current_fen_state = self.fen.initial_board_configuration
         self.fen.fen_to_board_state(self.current_fen_state, self)

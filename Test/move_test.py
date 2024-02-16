@@ -1,6 +1,7 @@
 import time
 import pygame
 from board_state import BoardState
+from fen import FEN
 from move_generator import MoveGenerator
 from piece import Piece
 
@@ -14,14 +15,24 @@ def wait_for_keypress():
             if event.type == pygame.KEYDOWN:
                 waiting = False
 
-def process_events():
+def process_events(board_state):
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
             exit()
+            
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_s:
+                fen = FEN()
+                fen = fen.board_state_to_fen(board_state)
+                file = open("fen.txt", "w")
+                file.write(fen)
+                file.close()                
+         
+            
 
 def move_generation_test(depth, board_state, chess, screen):
-    process_events()
+    process_events(board_state)
     if depth == 0:
         return 1, 0, 0  # Base case: return 1 move and 0 captures
 
@@ -49,11 +60,15 @@ def move_generation_test(depth, board_state, chess, screen):
             chess.draw(screen, board_state)
             pygame.display.flip()
             #wait_for_keypress()
-            time.sleep(1/100)
+            time.sleep(0)
         # Get the counts from the recursive call
         sub_moves, sub_captures, sub_castlings = move_generation_test(depth - 1, board_state, chess, screen)
         num_moves += sub_moves  # Accumulate total moves
         captures += sub_captures  # Accumulate total captures
+        # if (captures > 1576):
+        #         board_state.save()
+        #         exit()
+                
         castlings += sub_castlings
         board_state.undo_last_move()
         
