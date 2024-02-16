@@ -41,7 +41,7 @@ class FEN:
     fen_position_5 = "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8"
     fen_position_6 = "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10"
     #"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
-    initial_board_configuration = standard_game
+    initial_board_configuration = fen_position_6
     initial_castling_availability = "KQkq"
     def __init__(self):
         pass
@@ -127,16 +127,15 @@ class FEN:
         # Update castling availability based on FEN
         if 'K' in castling_avail:
             board_state.has_moved['KR'] = False
-            board_state.has_moved['K'] = False
         if 'Q' in castling_avail:
             board_state.has_moved['QR'] = False
-            board_state.has_moved['K'] = False
         if 'k' in castling_avail:
             board_state.has_moved['kr'] = False
-            board_state.has_moved['k'] = False
         if 'q' in castling_avail:
             board_state.has_moved['qr'] = False
-            board_state.has_moved['k'] = False
+
+        # Validate king and rook positions if no castling rights are supplied
+        # self.validate_king_rook_positions_for_castling(board, board_state, castling_avail)
 
         # Parse en passant target square
         # You need to handle this based on your board state structure
@@ -148,71 +147,25 @@ class FEN:
         board_state.move_number[Piece.White] = int(fullmove_number) - 1
         board_state.move_number[Piece.Black] = int(fullmove_number) - 1
 
-        return board
-
-    def fen_to_board_state(self, fen, board_state):
-        """
-        Parses the FEN string and updates the corresponding board configuration, 
-        castling availability, active color, en passant target, halfmove clock, and fullmove counter.
-        Handles incomplete FEN strings by setting default values for missing parts.
-        """
-        parts = fen.split(' ')
-
-        # Ensure all parts are present, set defaults for missing parts
-        while len(parts) < 6:
-            if len(parts) == 2:  # If only board configuration and active color are present
-                parts.extend(['-', '-', '0', '1'])  # Default castling, en passant, halfmove, fullmove
-            else:
-                parts.append('-' if len(parts) < 4 else '0')  # Default for en passant and halfmove, '0' for fullmove
-
-        board_config, active_color, castling_avail, en_passant, halfmove_clock, fullmove_number = parts
-
-        # Parse board configuration
-        board = board_state.board
-        board[:] = Piece.No_Piece
-        rows = board_config.split('/')
-        for i, row in enumerate(rows):
-            col = 0
-            for char in row:
-                if char.isdigit():
-                    col += int(char)
-                else:
-                    board[i, col] = self.get_piece_from_fen_char(char)
-                    col += 1
-
-        # Parse active color
-        board_state.current_player_color = Piece.White if active_color == 'w' else Piece.Black
-
-        # Reset castling availability
-        board_state.has_moved = {key: True for key in board_state.has_moved.keys()}
-
-        # Update castling availability based on FEN
-        board_state.has_moved.update((key, False) for key in ['K', 'Q', 'k', 'q'] if key in castling_avail)
-
-        # Parse en passant target square, halfmove clock, and fullmove number
-        board_state.halfmove_clock = int(halfmove_clock) if halfmove_clock.isdigit() else 0
-        board_state.move_number[Piece.White] = int(fullmove_number) - 1 if fullmove_number.isdigit() else 0
-        board_state.move_number[Piece.Black] = int(fullmove_number) - 1 if fullmove_number.isdigit() else 0
-
-        return board
-
-
-    # def fen_to_board_state(self, fen, board_state):
+    # def validate_king_rook_positions_for_castling(self, board, board_state, castling_avail):
     #     """
-    #     Parses the FEN string and returns the corresponding board configuration.
+    #     Validates the positions of kings and rooks to determine if castling rights should be adjusted.
     #     """
-    #     board = board_state.board
-    #     board[:] = Piece.No_Piece
-    #     rows = fen.split('/')
-    #     for i, row in enumerate(rows):
-    #         col = 0
-    #         for char in row:
-    #             if char.isdigit():
-    #                 col += int(char)
-    #             else:
-    #                 board[i, col] = self.get_piece_from_fen_char(char)
-    #                 col += 1
-    #     return board
+    #     # Standard starting positions for kings and rooks
+    #     standard_positions = {
+    #         'K': (7, 4), 'KR': (7, 7), 'QR': (7, 0),
+    #         'k': (0, 4), 'kr': (0, 7), 'qr': (0, 0)
+    #     }
+
+    #     for piece, position in standard_positions.items():
+    #         if piece in castling_avail:  # Skip if castling right is explicitly given
+    #             continue
+
+    #         # Check if the piece is not in its standard position
+    #         if board[position[0]][position[1]] != self.get_piece_from_fen_char(piece.upper()):
+    #             board_state.has_moved[piece] = True  # Mark as moved
+    #             print ("Adjusting castling rights for ", piece,"at position", position, " as it is not in standard position")
+
 
     def board_state_to_fen(self, board_state):
         # Piece placement
@@ -262,26 +215,3 @@ class FEN:
         fen += f' {fullmove_number}'
         
         return fen
-
-
-    # def board_state_to_fen(self, board_state):
-    #     """
-    #     Converts the board configuration to a FEN string.
-    #     """
-    #     board = board_state.board
-    #     fen = ''
-    #     empty_count = 0
-    #     for row in board:
-    #         for piece in row:
-    #             if piece == Piece.No_Piece:
-    #                 empty_count += 1
-    #             else:
-    #                 if empty_count > 0:
-    #                     fen += str(empty_count)
-    #                     empty_count = 0
-    #                 fen += self.get_fen_char_from_piece(piece)
-    #         if empty_count > 0:
-    #             fen += str(empty_count)
-    #             empty_count = 0
-    #         fen += '/'
-    #     return fen[:-1]  # Remove the last '/'    

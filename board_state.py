@@ -30,7 +30,6 @@ class BoardState:
     def reset_board(self):
         self.current_fen_state = self.fen.initial_board_configuration
         self.fen.fen_to_board_state(self.current_fen_state, self)
-        self.has_moved = {'K': False, 'Q': False, 'k': False, 'q': False, 'KR': False, 'QR': False, 'kr': False, 'qr': False}  # Track if kings and rooks have moved for castling
         self.last_double_move = None
         self.current_player_color = Piece.White
         self.is_game_over = False

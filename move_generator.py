@@ -72,12 +72,12 @@ class MoveGenerator:
         for move in potential_moves:
             if not self.does_move_leave_king_in_check(piece, start_position, move, king_position, board_state):
                 if (start_position[0] == move[0] and start_position[1] == move[1]):
-                    #print("Invalid move: ", move)
+                    print("Invalid move: ", move)
                     # todo: find the cause of this!!!
                     pass
 
-                else:
-                    valid_moves.append(ChessMove(piece,start_position, (move[0],move[1]),  board_state.board[move[0]][move[1]]))
+                
+                valid_moves.append(ChessMove(piece,start_position, (move[0],move[1]),  board_state.board[move[0]][move[1]]))
             #else:
             #    print("Move ", move, " leaves king in check")
         return valid_moves
@@ -334,6 +334,7 @@ class MoveGenerator:
     def can_castle(self, king_position, rook_position, board_state, king_color):
         """Check if castling conditions are met."""
         # Check if the king is in check
+        
         if self.is_king_in_check(king_color, king_position, board_state):
             return False
 
@@ -356,33 +357,24 @@ class MoveGenerator:
         return True
 
 
-
-    # def can_castle(self, king_position, rook_position, board_state, king_color):
-    #     """Check if castling conditions are met."""
-    #     if (self.is_king_in_check(king_color, king_position, board_state)):
-    #         return False
-
-    #     # Check if the king moves through an attacked square
-    #     direction = 1 if rook_position[1] > king_position[1] else -1
-    #     for offset in range(1, 3):
-    #         if (board_state.board[king_position[0]][king_position[1] + offset * direction] != Piece.No_Piece):
-    #             return False
-
-    #     return True
     
     def get_castling_moves(self, king_position, board_state, king_color):
         castling_moves = []
-        color_key = 'K' if king_color == Piece.White else 'k'
-        queenside_key = 'QR' if king_color == Piece.White else 'qr'
-        kingside_key = 'KR' if king_color == Piece.White else 'kr'
+        king_key = 'K' if king_color == Piece.White else 'k'
+        queenside_rook_key = 'QR' if king_color == Piece.White else 'qr'
+        kingside_rook_key = 'KR' if king_color == Piece.White else 'kr'
 
         # Check for kingside castling
-        if not board_state.has_moved[color_key] and not board_state.has_moved[kingside_key]:
+        king_has_moved = board_state.has_moved[king_key]
+        q_rook_has_moved = board_state.has_moved[queenside_rook_key]
+        k_rook_has_moved = board_state.has_moved[kingside_rook_key]
+
+        if not king_has_moved and not k_rook_has_moved:
             if self.can_castle(king_position, (king_position[0], 7), board_state, king_color):
                 castling_moves.append((king_position[0], 6))  # King's destination
 
         # Check for queenside castling
-        if not board_state.has_moved[color_key] and not board_state.has_moved[queenside_key]:
+        if not king_has_moved and not q_rook_has_moved:
             if self.can_castle(king_position, (king_position[0], 0), board_state, king_color):
                 castling_moves.append((king_position[0], 2))  # King's destination
 
