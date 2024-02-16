@@ -10,7 +10,6 @@ class BoardState:
     board = np.empty((8, 8), dtype=Piece)
     current_valid_moves = []
     selected_piece_position = None
-    last_move: ChessMove = None
     has_moved = {'K': False, 'Q': False, 'k': False, 'q': False, 'KR': False, 'QR': False, 'kr': False, 'qr': False}  # Track if kings and rooks have moved for castling
     is_game_over = False
     black_positions = []
@@ -30,7 +29,7 @@ class BoardState:
 
     def reset_board(self):
         self.current_fen_state = self.fen.initial_board_configuration
-        self.board = self.fen.fen_to_board(self.current_fen_state)
+        self.fen.fen_to_board_state(self.current_fen_state, self)
         self.has_moved = {'K': False, 'Q': False, 'k': False, 'q': False, 'KR': False, 'QR': False, 'kr': False, 'qr': False}  # Track if kings and rooks have moved for castling
         self.last_double_move = None
         self.current_player_color = Piece.White

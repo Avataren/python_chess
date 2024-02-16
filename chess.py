@@ -99,7 +99,7 @@ class Chess:
         self.board_state.current_valid_moves = None
             
     def save_fen_state(self):
-        fen = self.fen.board_to_fen(self.board_state.board)
+        fen = self.fen.board_state_to_fen(self.board_state)
         file = open("fen.txt", "w")
         file.write(fen)
         file.close()
@@ -108,7 +108,7 @@ class Chess:
         self.reset_board()
         file = open("fen.txt", "r")
         fen = file.read()
-        self.board_state.board = self.fen.fen_to_board(fen)
+        self.fen.fen_to_board_state(fen, self.board_state)
 
     def update_dragging_piece_position(self, mousePosition):
         self.drag_position = (mousePosition[0] - self.square_size / 2, mousePosition[1] - self.square_size / 2)
@@ -137,7 +137,7 @@ class Chess:
         self.board_drawer.draw_board(screen)
         self.board_drawer.draw_valid_moves(screen, custom_board_state.current_valid_moves)
         # self.draw_board(screen)
-        self.draw_pieces_from_fen(screen, self.fen.board_to_fen(custom_board_state.board))
+        self.draw_pieces_from_fen(screen, self.fen.board_state_to_fen(custom_board_state))
         if (self.dragging):
             self.board_drawer.highlight_square(screen, self.selected_grid_position)
             self.draw_dragged_piece(screen)

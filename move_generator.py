@@ -71,7 +71,13 @@ class MoveGenerator:
         king_position = board_state.get_king_position(Piece.get_piece_color(piece))
         for move in potential_moves:
             if not self.does_move_leave_king_in_check(piece, start_position, move, king_position, board_state):
-                valid_moves.append(ChessMove(piece,start_position, (move[0],move[1]),  board_state.board[move[0]][move[1]]))
+                if (start_position[0] == move[0] and start_position[1] == move[1]):
+                    #print("Invalid move: ", move)
+                    # todo: find the cause of this!!!
+                    pass
+
+                else:
+                    valid_moves.append(ChessMove(piece,start_position, (move[0],move[1]),  board_state.board[move[0]][move[1]]))
             #else:
             #    print("Move ", move, " leaves king in check")
         return valid_moves
@@ -115,7 +121,7 @@ class MoveGenerator:
             for i in range(1, max_range):
                 end_row = start_row + dir_row * i
                 end_col = start_col + dir_col * i
-
+                    
                 # Check if the move is within board bounds
                 if not (0 <= end_row < 8 and 0 <= end_col < 8):
                     break
@@ -305,18 +311,64 @@ class MoveGenerator:
         return False
 
 
+    # def can_castle(self, king_position, rook_position, board_state, king_color):
+    #     """Check if castling conditions are met."""
+    #     if self.is_king_in_check(king_color, king_position, board_state):
+    #         return False
+
+    #     # Validate initial positions
+    #     if not (0 <= king_position[0] <= 7 and 0 <= rook_position[0] <= 7):
+    #         return False
+
+    #     direction = 1 if rook_position[1] > king_position[1] else -1
+    #     for offset in range(1, 3):
+    #         next_col = king_position[1] + offset * direction
+    #         # Ensure next_col is within the board's boundaries
+    #         if not 0 <= next_col <= 7:
+    #             return False
+    #         if board_state.board[king_position[0]][next_col] != Piece.No_Piece:
+    #             return False
+
+    #     return True
+
     def can_castle(self, king_position, rook_position, board_state, king_color):
         """Check if castling conditions are met."""
-        if (self.is_king_in_check(king_color, king_position, board_state)):
+        # Check if the king is in check
+        if self.is_king_in_check(king_color, king_position, board_state):
             return False
 
-        # Check if the king moves through an attacked square
         direction = 1 if rook_position[1] > king_position[1] else -1
-        for offset in range(1, 3):
-            if (board_state.board[king_position[0]][king_position[1] + offset * direction] != Piece.No_Piece):
+
+        # Check all squares between the king and rook, excluding the rook's position
+        for offset in range(1, abs(rook_position[1] - king_position[1])):
+            intermediate_position = (king_position[0], king_position[1] + offset * direction)
+
+            # Check if the square is empty
+            if board_state.board[intermediate_position[0]][intermediate_position[1]] != Piece.No_Piece:
                 return False
 
+            # Check if the square the king moves through is under attack
+            if offset < 3:  # Only check the first two squares for the king
+                if self.is_square_under_attack(intermediate_position, king_color, board_state):
+                    return False
+
+        # No need to check if the rook is under attack or passes through an attacked square
         return True
+
+
+
+    # def can_castle(self, king_position, rook_position, board_state, king_color):
+    #     """Check if castling conditions are met."""
+    #     if (self.is_king_in_check(king_color, king_position, board_state)):
+    #         return False
+
+    #     # Check if the king moves through an attacked square
+    #     direction = 1 if rook_position[1] > king_position[1] else -1
+    #     for offset in range(1, 3):
+    #         if (board_state.board[king_position[0]][king_position[1] + offset * direction] != Piece.No_Piece):
+    #             return False
+
+    #     return True
     
     def get_castling_moves(self, king_position, board_state, king_color):
         castling_moves = []
