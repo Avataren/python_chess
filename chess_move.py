@@ -2,7 +2,7 @@ from piece import Piece
 
 class ChessMove:
     is_castling_move = False
-    
+    is_en_passant = False
     def __init__(self, piece:Piece, start, end, captured_piece=Piece.No_Piece, captured_position=None):
         self.piece = piece
         self.start = start

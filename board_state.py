@@ -132,6 +132,7 @@ class BoardState:
         if self.captured_en_passant is not None:
             #print ("Adding en passant to move history")
             move = ChessMove(piece, old_position, new_position, self.captured_en_passant, self.captured_en_passant_position)
+            move.is_en_passant = True
             self.captured_en_passant = None
             self.captured_en_passant_position = None
             
