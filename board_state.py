@@ -28,11 +28,14 @@ class BoardState:
         self.reset_board()
     move_history = []
 
-    def save(self):
+    def save(self, history = None):
+        if (history is None):
+            history = self.move_history
         data_to_save = {
             'fen': self.fen.board_state_to_fen(self),
-            'move_history': self.move_history
+            'move_history': history
         }
+        print ("saving game states with ", len(history), " moves in history")
         with open("game.chs", "wb") as file:
             pickle.dump(data_to_save, file)
 
@@ -42,16 +45,19 @@ class BoardState:
         fen_state = loaded_data['fen']
         self.fen.fen_to_board_state(fen_state, self)
         self.move_history = loaded_data['move_history']
-        
+        print ("loaded game states with ", len(self.move_history), " moves in history")
+        #print (self.move_history)
+        for (move, _) in self.move_history:
+            print (move.piece, "from ", move.start, "to ", move.end, "captured: ", move.captured_piece, "at ", move.captured_position)
+            
     def reset_board(self):
         self.current_fen_state = self.fen.initial_board_configuration
-        self.fen.fen_to_board_state(self.current_fen_state, self)
         self.last_double_move = None
-        self.current_player_color = Piece.White
         self.is_game_over = False
         self.move_number = {Piece.Black:0, Piece.White:0}
         self.captured_en_passant = None
         self.captured_en_passant_position = None        
+        self.fen.fen_to_board_state(self.current_fen_state, self)
 
     def num_moves_without_capture(self):
         return max(self.move_number[Piece.White], self.move_number[Piece.Black])
@@ -164,7 +170,6 @@ class BoardState:
                 self.board[last_move.rook_end[0]][last_move.rook_end[1]] = Piece.No_Piece
                 self.board[last_move.rook_start[0]][last_move.rook_start[1]] = last_move.rook
 
-            
             self.current_player_color = Piece.get_piece_color(last_move.piece)
         else:
             print ("No moves to undo")
@@ -281,6 +286,7 @@ class BoardState:
     def make_move(self, move):
         self.execute_move(move)
         self.current_valid_moves = None
+        # self.debug_print_board()
         
     def copy(self):
         # Create a new BoardState instance
@@ -298,7 +304,7 @@ class BoardState:
         new_board_state.move_number = self.move_number.copy()
         return new_board_state    
     
-    def debug_print_board(self):
+    def print_board(self):
         """
         Prints the board configuration in text format.
         """

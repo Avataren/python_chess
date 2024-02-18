@@ -91,24 +91,28 @@ class Piece(IntEnum):
         if piece_type == Piece.King:
             return 1000
 
-    def __str__(self):
+    @staticmethod
+    def description(piece):
         pieceType = (
             "Pawn"
-            if self.is_pawn(self)
+            if Piece.is_pawn(piece)
             else "Knight"
-            if self.is_knight(self)
+            if Piece.is_knight(piece)
             else "Bishop"
-            if self.is_bishop(self)
+            if Piece.is_bishop(piece)
             else "Rook"
-            if self.is_rook(self)
+            if Piece.is_rook(piece)
             else "Queen"
-            if self.is_queen(self)
+            if Piece.is_queen(piece)
             else "King"
-            if self.is_king(self)
+            if Piece.is_king(piece)
             else "No Piece"
         )
         color = "White"
-        if self >= Piece.Black:
+        if piece >= Piece.Black:
             color = "Black"
       
-        return "Piece is a " + color + " " + pieceType
+        return color + " " + pieceType        
+
+    def __str__(self):
+        return self.description()

@@ -16,6 +16,15 @@ class ChessMove:
         self.rook_start = start
         self.rook_end = end
         
+    def to_chess_notation(row, col):
+        # Mapping for columns: 0 -> 'a', 1 -> 'b', ..., 7 -> 'h'
+        columns = 'abcdefgh'
+        # Chess rows start from the bottom, so invert row index
+        chess_row = 8 - row
+        # Get corresponding column letter
+        chess_col = columns[col]
+        # Combine column letter and row number for chess notation
+        return chess_col + str(chess_row)
 
     def __str__(self):
         return f"ChessMove {self.piece} from {self.start} to {self.end}, captured: {self.captured_piece} at {self.captured_position}, is_castling_move: {self.is_castling_move}"

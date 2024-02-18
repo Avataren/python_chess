@@ -72,7 +72,7 @@ class MoveGenerator:
         for move in potential_moves:
             if not self.does_move_leave_king_in_check(piece, start_position, move, king_position, board_state):
                 if (start_position[0] == move[0] and start_position[1] == move[1]):
-                    print("Invalid move: ", move)
+                    print("Invalid move, start and end is the same! ", move)
                     # todo: find the cause of this!!!
                     pass
 
@@ -104,8 +104,13 @@ class MoveGenerator:
         board_state.update_board(start_position, end_position)
         #board_state.prepare()
         # If the moved piece is the king, update the king's position for the simulation
-        if Piece.is_king(moved_piece):
-            king_position = end_position
+        # if Piece.is_king(moved_piece):
+        #     #print ("moved piece is king")
+        #     king_position = end_position
+        # else:
+        #     #print ("Finding king position")
+        #     king_position = board_state.get_king_position(Piece.get_piece_color(moved_piece))
+            #print ("King position: ", king_position)
         # Check if the king is in check after the move
         in_check = self.is_king_in_check(Piece.get_piece_color(moved_piece), king_position, board_state)
         board_state.undo_last_move()

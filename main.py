@@ -3,7 +3,7 @@ import traceback
 from Test.move_test import run_tests
 from chess import Chess
 
-test_mode = True
+test_mode = False
 
 def main():
     global test_mode
